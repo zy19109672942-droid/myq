@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script>
+        // 检查登录状态
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>职位管理 - 永奇招聘平台</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-light: #f3f4f6;
+            --surface-white: #ffffff;
+            --text-dark: #1f2937;
+            --text-gray: #6b7280;
+            --primary-color: #059669; /* Green theme for jobs */
+            --primary-hover: #047857;
+            --border-color: #e5e7eb;
+        }
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        /* Unified Navbar (Light theme adaptation) */
+        .navbar-custom {
+            background-color: var(--surface-white);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            padding: 1rem 2rem;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--text-dark) !important;
+            letter-spacing: 1px;
+        }
+        .navbar-brand i {
+            color: var(--primary-color);
+            margin-right: 10px;
+            font-size: 1.5rem;
+        }
+        .nav-link {
+            color: var(--text-gray) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+            border-radius: 6px;
+            padding: 8px 16px !important;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary-color) !important;
+            background-color: rgba(5, 150, 105, 0.1);
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-top: 80px;
+            padding: 40px 0;
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+        }
+
+        /* Job Editor Section */
+        .job-editor-card {
+            background: var(--surface-white);
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-top: -30px;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #374151;
+        }
+        .form-control, .form-select {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
+        }
+        .rich-text-toolbar {
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            padding: 10px;
+            background-color: #f9fafb;
+        }
+        .rich-text-toolbar button {
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .rich-text-toolbar button:hover {
+            background-color: #e5e7eb;
+            color: var(--text-dark);
+        }
+        .rich-text-editor {
+            border: 1px solid var(--border-color);
+            border-radius: 0 0 8px 8px;
+            min-height: 200px;
+            padding: 15px;
+            outline: none;
+        }
+        .rich-text-editor:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* Tags and Classification Section */
+        .tags-section {
+            padding: 60px 0;
+        }
+        .tag-category-card {
+            background: var(--surface-white);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            height: 100%;
+            border-top: 4px solid var(--primary-color);
+            transition: transform 0.3s;
+        }
+        .tag-category-card:hover {
+            transform: translateY(-5px);
+        }
+        .custom-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin: 5px;
+            background-color: rgba(5, 150, 105, 0.1);
+            color: var(--primary-color);
+            border: 1px solid rgba(5, 150, 105, 0.2);
+            cursor: move;
+        }
+        .custom-badge i.remove-tag {
+            margin-left: 8px;
+            cursor: pointer;
+            color: #ef4444;
+            opacity: 0.7;
+        }
+        .custom-badge i.remove-tag:hover {
+            opacity: 1;
+        }
+
+        /* Job List Table */
+        .job-table-container {
+            background: var(--surface-white);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            margin-bottom: 60px;
+        }
+        .table-custom th {
+            background-color: #f9fafb;
+            color: var(--text-gray);
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-color);
+            padding: 15px;
+        }
+        .table-custom td {
+            padding: 15px;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .status-dot {
+            height: 10px;
+            width: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .status-active { background-color: var(--primary-color); }
+        .status-closed { background-color: #9ca3af; }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <i class="fa-solid fa-code-branch"></i>永奇招聘平台
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">控制台</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="jobs.html">职位管理</a></li>
+                    <li class="nav-item"><a class="nav-link" href="resumes.html">简历中心</a></li>
+                    <li class="nav-item"><a class="nav-link" href="interviews.html">面试排期</a></li>
+                    <li class="nav-item"><a class="nav-link" href="tests.html">在线笔试</a></li>
+                    <li class="nav-item"><a class="nav-link" href="analysis.html">数据分析</a></li>
+                    <li class="nav-item"><a class="nav-link" href="settings.html">系统设置</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header text-center">
+        <div class="container">
+            <h1 class="fw-bold display-5"><i class="fa-solid fa-briefcase"></i> 职位发布与管理</h1>
+            <p class="lead mt-3">标准化职位信息录入，精细化分类与标签体系构建。</p>
+            <div class="mt-4">
+                <a href="#post-job" class="btn btn-light btn-lg px-4 fw-bold text-success rounded-pill shadow-sm me-3">发布新职位</a>
+                <a href="#manage-tags" class="btn btn-outline-light btn-lg px-4 rounded-pill">管理标签体系</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sub Feature 1: 职位结构化发布与编辑 -->
+    <section id="post-job" class="container fade-in">
+        <div class="job-editor-card">
+            <h3 class="fw-bold mb-4 border-bottom pb-3"><i class="fa-solid fa-pen-to-square text-success"></i> 职位结构化发布</h3>
+            <form id="jobForm">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label">职位名称</label>
+                        <input type="text" class="form-control" placeholder="例如：高级Java研发工程师" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">所属部门</label>
+                        <select class="form-select">
+                            <option>核心研发部</option>
+                            <option>数据中台部</option>
+                            <option>前端基础架构组</option>
+                            <option>AI算法实验室</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">工作地点</label>
+                        <select class="form-select">
+                            <option>北京总部</option>
+                            <option>上海研发中心</option>
+                            <option>深圳分部</option>
+                            <option>杭州</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">薪资范围 (月薪)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" placeholder="最低" value="20">
+                            <span class="input-group-text">K -</span>
+                            <input type="number" class="form-control" placeholder="最高" value="40">
+                            <span class="input-group-text">K</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">经验要求</label>
+                        <select class="form-select">
+                            <option>不限</option>
+                            <option>1-3年</option>
+                            <option selected>3-5年</option>
+                            <option>5-10年</option>
+                            <option>10年以上</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">学历要求</label>
+                        <select class="form-select">
+                            <option>不限</option>
+                            <option>大专</option>
+                            <option selected>本科</option>
+                            <option>硕士</option>
+                            <option>博士</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">招聘人数</label>
+                        <input type="number" class="form-control" value="2">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">职位描述与要求</label>
+                        <div class="rich-text-toolbar">
+                            <button type="button" title="加粗"><i class="fa-solid fa-bold"></i></button>
+                            <button type="button" title="斜体"><i class="fa-solid fa-italic"></i></button>
+                            <button type="button" title="无序列表"><i class="fa-solid fa-list-ul"></i></button>
+                            <button type="button" title="有序列表"><i class="fa-solid fa-list-ol"></i></button>
+                            <button type="button" title="插入链接"><i class="fa-solid fa-link"></i></button>
+                        </div>
+                        <div class="rich-text-editor" contenteditable="true">
+                            <p><b>岗位职责：</b></p>
+                            <ul>
+                                <li>负责公司核心业务系统的架构设计与开发工作；</li>
+                                <li>参与系统微服务化改造，提升系统高可用性与扩展性；</li>
+                                <li>解决研发过程中的关键问题和技术难题。</li>
+                            </ul>
+                            <p><br><b>任职要求：</b></p>
+                            <ul>
+                                <li>计算机相关专业本科及以上学历，3年以上Java开发经验；</li>
+                                <li>精通Spring Boot、Spring Cloud等主流微服务框架；</li>
+                                <li>熟悉MySQL，具备优秀的SQL优化能力。</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-12 text-end mt-4">
+                        <button type="button" class="btn btn-outline-secondary px-4 me-2">存为草稿</button>
+                        <button type="button" class="btn btn-success px-5 fw-bold" style="background-color: var(--primary-color);">发布职位</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Job Filter Section -->
+    <section class="container fade-in mt-5">
+        <div class="job-editor-card p-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-filter text-success"></i> 职位高级筛选</h5>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label text-muted small">职位状态</label>
+                    <select class="form-select form-select-sm">
+                        <option value="all">全部状态</option>
+                        <option value="active">招聘中</option>
+                        <option value="closed">已关闭</option>
+                        <option value="draft">草稿</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted small">发布时间范围</label>
+                    <input type="date" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted small">至</label>
+                    <input type="date" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-sm btn-outline-success w-100 me-2">重置</button>
+                    <button class="btn btn-sm btn-success w-100" style="background-color: var(--primary-color);">应用筛选</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sub Feature 2: 职位分类与标签体系管理 -->
+    <section id="manage-tags" class="container tags-section fade-in">
+        <h3 class="fw-bold mb-4"><i class="fa-solid fa-tags text-success"></i> 职位分类与标签体系管理</h3>
+        <p class="text-muted mb-4">拖拽标签进行重组，点击标签上的 'x' 进行删除，或者在下方添加新标签。</p>
+        
+        <div class="row g-4" id="tag-categories-container">
+            <!-- Data injected by JS -->
+        </div>
+
+        <div class="card mt-4 border-0 shadow-sm" style="border-radius: 12px;">
+            <div class="card-body p-4 d-flex align-items-center">
+                <h5 class="m-0 me-4 fw-bold">新增标签：</h5>
+                <select class="form-select w-auto me-3" id="newTagCategory">
+                    <option value="tech">技术栈标签</option>
+                    <option value="welfare">福利亮点标签</option>
+                    <option value="status">紧急状态标签</option>
+                </select>
+                <input type="text" class="form-control w-25 me-3" id="newTagName" placeholder="输入标签名称...">
+                <button class="btn btn-success" id="btnAddTag"><i class="fa-solid fa-plus"></i> 添加</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Active Jobs Table -->
+    <section class="container fade-in">
+        <div class="job-table-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold m-0"><i class="fa-solid fa-list-check text-success"></i> 已发布职位列表</h3>
+                <div class="input-group w-25">
+                    <input type="text" class="form-control" placeholder="搜索职位名称...">
+                    <button class="btn btn-outline-secondary"><i class="fa-solid fa-search"></i></button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-custom table-hover">
+                    <thead>
+                        <tr>
+                            <th>职位名称</th>
+                            <th>所属部门</th>
+                            <th>招聘人数</th>
+                            <th>收到简历</th>
+                            <th>发布时间</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="job-list-tbody">
+                        <!-- Data injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination -->
+            <nav class="mt-4">
+                <ul class="pagination justify-content-end">
+                    <li class="page-item disabled"><a class="page-link" href="#">上一页</a></li>
+                    <li class="page-item active"><a class="page-link" href="#" style="background-color: var(--primary-color); border-color: var(--primary-color);">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item"><a class="page-link" href="#">下一页</a></li>
+                </ul>
+            </nav>
+        </div>
+    </section>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Tag Data
+        const tagData = {
+            tech: { title: "技术栈标签", icon: "fa-microchip", tags: ["Java", "Spring Boot", "React", "Vue3", "Python", "C++", "Go", "Kubernetes"] },
+            welfare: { title: "福利亮点标签", icon: "fa-gift", tags: ["年底双薪", "弹性工作", "扁平管理", "带薪年假", "免费三餐", "定期体检"] },
+            status: { title: "业务属性标签", icon: "fa-fire", tags: ["急招", "核心业务", "外派", "新部门组建", "储备人才"] }
+        };
+
+        // Job List Data
+        const jobListData = [
+            { name: "高级Java研发工程师", dept: "核心研发部", count: 2, resumes: 145, date: "2026-04-01", status: "active" },
+            { name: "资深前端开发 (React)", dept: "前端基础架构组", count: 1, resumes: 89, date: "2026-03-28", status: "active" },
+            { name: "自然语言处理算法工程师", dept: "AI算法实验室", count: 3, resumes: 56, date: "2026-03-25", status: "active" },
+            { name: "大数据平台开发工程师", dept: "数据中台部", count: 2, resumes: 112, date: "2026-03-20", status: "active" },
+            { name: "高级软件测试工程师", dept: "质量保障部", count: 2, resumes: 230, date: "2026-03-15", status: "closed" },
+            { name: "C++音视频开发", dept: "多媒体技术部", count: 1, resumes: 42, date: "2026-03-10", status: "closed" }
+        ];
+
+        $(document).ready(function() {
+            // Render Tags
+            const $tagsContainer = $('#tag-categories-container');
+            for (const [key, category] of Object.entries(tagData)) {
+                let tagsHtml = category.tags.map(tag => `
+                    <span class="custom-badge" draggable="true">
+                        ${tag} <i class="fa-solid fa-xmark remove-tag"></i>
+                    </span>
+                `).join('');
+
+                const colHtml = `
+                    <div class="col-md-4">
+                        <div class="tag-category-card" id="cat-${key}">
+                            <h5 class="fw-bold mb-3"><i class="fa-solid ${category.icon} text-success me-2"></i>${category.title}</h5>
+                            <div class="tags-wrapper">
+                                ${tagsHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $tagsContainer.append(colHtml);
+            }
+
+            // Render Job List
+            const $tbody = $('#job-list-tbody');
+            jobListData.forEach(job => {
+                const statusHtml = job.status === 'active' 
+                    ? `<span class="status-dot status-active"></span> 招聘中`
+                    : `<span class="status-dot status-closed"></span> 已关闭`;
+                
+                const tr = `
+                    <tr>
+                        <td class="fw-bold text-dark">${job.name}</td>
+                        <td>${job.dept}</td>
+                        <td>${job.count} 人</td>
+                        <td><span class="badge bg-info text-dark rounded-pill px-3">${job.resumes} 份</span></td>
+                        <td>${job.date}</td>
+                        <td>${statusHtml}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" title="编辑"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" title="${job.status === 'active' ? '下线' : '删除'}">
+                                <i class="fa-solid ${job.status === 'active' ? 'fa-ban' : 'fa-trash'}"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                $tbody.append(tr);
+            });
+
+            // Interactive interactions for tags
+            $(document).on('click', '.remove-tag', function() {
+                $(this).parent('.custom-badge').fadeOut(300, function() { $(this).remove(); });
+            });
+
+            $('#btnAddTag').click(function() {
+                const cat = $('#newTagCategory').val();
+                const name = $('#newTagName').val().trim();
+                if(name) {
+                    const newBadge = `
+                        <span class="custom-badge" style="display:none;">
+                            ${name} <i class="fa-solid fa-xmark remove-tag"></i>
+                        </span>
+                    `;
+                    $(`#cat-${cat} .tags-wrapper`).append(newBadge);
+                    $(`#cat-${cat} .tags-wrapper .custom-badge:last`).fadeIn(300);
+                    $('#newTagName').val('');
+                }
+            });
+
+            // Rich Text Toolbar Simple Simulation
+            $('.rich-text-toolbar button').click(function() {
+                document.execCommand('styleWithCSS', false, true);
+                // Real implementation would use commands like document.execCommand('bold')
+                // This is just UI simulation for visual richness
+                $('.rich-text-editor').focus();
+            });
+        });
+    </script>
+</body>
+</html>

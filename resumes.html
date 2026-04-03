@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script>
+        // 检查登录状态
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简历中心 - 永奇招聘平台</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #faf5ff; /* Light purple tint */
+            --primary-purple: #8b5cf6;
+            --secondary-purple: #c4b5fd;
+            --text-dark: #1e1b4b;
+            --surface-white: #ffffff;
+            --border-color: #ede9fe;
+        }
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        /* Unified Navbar (Purple theme adaptation) */
+        .navbar-custom {
+            background-color: var(--surface-white);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.08);
+            padding: 1rem 2rem;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--text-dark) !important;
+            letter-spacing: 1px;
+        }
+        .navbar-brand i {
+            color: var(--primary-purple);
+            margin-right: 10px;
+            font-size: 1.5rem;
+        }
+        .nav-link {
+            color: #6b7280 !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+            border-radius: 6px;
+            padding: 8px 16px !important;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary-purple) !important;
+            background-color: rgba(139, 92, 246, 0.1);
+        }
+
+        /* Layout Container */
+        .main-wrapper {
+            margin-top: 90px;
+            padding: 0 30px 50px;
+        }
+
+        /* Sub Feature 1: Kanban Board */
+        .kanban-header {
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+        }
+        .kanban-header h2 {
+            font-weight: 800;
+            color: var(--text-dark);
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+        .kanban-header h2 i {
+            color: var(--primary-purple);
+            margin-right: 15px;
+            font-size: 2.2rem;
+        }
+        .kanban-board {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+            min-height: 60vh;
+        }
+        .kanban-column {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            min-width: 320px;
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+        }
+        .kanban-col-header {
+            padding: 15px 20px;
+            font-weight: 700;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .col-new { border-top: 4px solid #3b82f6; }
+        .col-screening { border-top: 4px solid #f59e0b; }
+        .col-interview { border-top: 4px solid #10b981; }
+        .col-offer { border-top: 4px solid #8b5cf6; }
+        .col-rejected { border-top: 4px solid #ef4444; }
+        
+        .badge-count {
+            background: #f3f4f6;
+            color: #4b5563;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+
+        .kanban-cards {
+            padding: 15px;
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .resume-card {
+            background: var(--surface-white);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .resume-card:hover {
+            box-shadow: 0 8px 15px rgba(139, 92, 246, 0.15);
+            transform: translateY(-2px);
+            border-color: var(--secondary-purple);
+        }
+        .candidate-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        .apply-job {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+        .match-score {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+        .progress-micro {
+            height: 6px;
+            flex-grow: 1;
+            margin-left: 10px;
+            background-color: #f3f4f6;
+            border-radius: 3px;
+        }
+        .progress-bar-micro {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+        }
+
+        /* Sub Feature 2: Talent Pool (Table) */
+        .talent-pool-section {
+            margin-top: 60px;
+            background: var(--surface-white);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.05);
+            border: 1px solid var(--border-color);
+        }
+        .filter-bar {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+        .table-talent th {
+            color: #4b5563;
+            font-weight: 600;
+            border-bottom-width: 2px;
+        }
+        .table-talent td {
+            vertical-align: middle;
+            color: #374151;
+        }
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--secondary-purple);
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+
+        /* Offcanvas Radar Chart */
+        .offcanvas-custom {
+            width: 500px !important;
+        }
+        .radar-container {
+            width: 100%;
+            height: 350px;
+            margin-top: 20px;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <i class="fa-solid fa-code-branch"></i>永奇招聘平台
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">控制台</a></li>
+                    <li class="nav-item"><a class="nav-link" href="jobs.html">职位管理</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="resumes.html">简历中心</a></li>
+                    <li class="nav-item"><a class="nav-link" href="interviews.html">面试排期</a></li>
+                    <li class="nav-item"><a class="nav-link" href="tests.html">在线笔试</a></li>
+                    <li class="nav-item"><a class="nav-link" href="analysis.html">数据分析</a></li>
+                    <li class="nav-item"><a class="nav-link" href="settings.html">系统设置</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-wrapper" id="kanban-view">
+        <!-- Sub Feature 1: 简历自动化解析与筛选 -->
+        <div class="kanban-header">
+            <h2><i class="fa-solid fa-robot"></i> 简历自动化解析与筛选看板</h2>
+        </div>
+        <p class="text-muted mb-4">系统已自动提取关键信息并计算岗位匹配度。拖拽卡片以更改候选人所处阶段。</p>
+
+        <div class="kanban-board" id="kanban-board-container">
+            <!-- Columns injected by JS -->
+        </div>
+
+        <!-- Sub Feature 2: 企业人才库分类归档 -->
+        <div class="talent-pool-section" id="talent-pool">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold m-0"><i class="fa-solid fa-database text-purple" style="color: var(--primary-purple);"></i> 企业人才库分类归档</h3>
+                <button class="btn btn-primary px-4" style="background-color: var(--primary-purple); border:none;">导出人才数据</button>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar row g-3">
+                <div class="col-md-3">
+                    <input type="text" class="form-control" placeholder="按姓名、技能搜索...">
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select">
+                        <option>技术方向 (全部)</option>
+                        <option>Java后端</option>
+                        <option>前端开发</option>
+                        <option>算法工程师</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select">
+                        <option>学历要求 (全部)</option>
+                        <option>本科</option>
+                        <option>硕士</option>
+                        <option>博士</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select">
+                        <option>归档原因 (全部)</option>
+                        <option>薪资不匹配</option>
+                        <option>面试未通过</option>
+                        <option>候选人放弃</option>
+                        <option>HC冻结</option>
+                    </select>
+                </div>
+                <div class="col-md-3 text-end">
+                    <button class="btn btn-outline-secondary me-2">重置</button>
+                    <button class="btn btn-dark" style="background-color: #1e1b4b;">精确检索</button>
+                </div>
+            </div>
+
+            <!-- Talent Table -->
+            <div class="table-responsive">
+                <table class="table table-hover table-talent">
+                    <thead>
+                        <tr>
+                            <th>候选人信息</th>
+                            <th>核心技能栈</th>
+                            <th>工作年限</th>
+                            <th>最高学历</th>
+                            <th>归档时间</th>
+                            <th>归档原因</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="talent-tbody">
+                        <!-- Data injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sub Feature 3: Resume Source Analysis -->
+        <div class="talent-pool-section mt-5" id="source-analysis">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold m-0"><i class="fa-solid fa-chart-pie text-purple" style="color: var(--primary-purple);"></i> 简历来源渠道分析</h3>
+            </div>
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center">
+                    <div style="height: 300px; width: 100%; display: flex; justify-content: center;">
+                        <canvas id="sourceChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="list-group">
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 mb-2 rounded bg-light">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-primary rounded-circle p-2 me-3"><i class="fa-solid fa-globe"></i></span>
+                                <div>
+                                    <h6 class="mb-0 fw-bold">Boss直聘</h6>
+                                    <small class="text-muted">转化率最高渠道</small>
+                                </div>
+                            </div>
+                            <span class="fs-5 fw-bold text-primary">45%</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 mb-2 rounded bg-light">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-success rounded-circle p-2 me-3"><i class="fa-solid fa-users"></i></span>
+                                <div>
+                                    <h6 class="mb-0 fw-bold">内部推荐</h6>
+                                    <small class="text-muted">员工内推计划</small>
+                                </div>
+                            </div>
+                            <span class="fs-5 fw-bold text-success">25%</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 mb-2 rounded bg-light">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-info rounded-circle p-2 me-3"><i class="fa-solid fa-building"></i></span>
+                                <div>
+                                    <h6 class="mb-0 fw-bold">校园招聘</h6>
+                                    <small class="text-muted">春招/秋招渠道</small>
+                                </div>
+                            </div>
+                            <span class="fs-5 fw-bold text-info">20%</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 mb-2 rounded bg-light">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-secondary rounded-circle p-2 me-3"><i class="fa-solid fa-envelope"></i></span>
+                                <div>
+                                    <h6 class="mb-0 fw-bold">官网投递</h6>
+                                    <small class="text-muted">企业招聘官网</small>
+                                </div>
+                            </div>
+                            <span class="fs-5 fw-bold text-secondary">10%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offcanvas for Resume Detail & Radar Chart -->
+    <div class="offcanvas offcanvas-end offcanvas-custom" tabindex="-1" id="resumeDetailPanel">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title fw-bold"><i class="fa-solid fa-id-card me-2" style="color: var(--primary-purple);"></i> 简历智能解析报告</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="text-center mb-4">
+                <div class="avatar-circle mx-auto mb-3" style="width: 80px; height: 80px; font-size: 2rem;" id="detail-avatar">李</div>
+                <h4 class="fw-bold" id="detail-name">李华</h4>
+                <p class="text-muted" id="detail-job">应聘：高级Java工程师</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <span class="badge bg-light text-dark border">本科</span>
+                    <span class="badge bg-light text-dark border">5年经验</span>
+                    <span class="badge bg-light text-dark border">211院校</span>
+                </div>
+            </div>
+
+            <h6 class="fw-bold mt-5 mb-3 border-start border-4 border-primary ps-2" style="border-color: var(--primary-purple) !important;">能力雷达图 (系统自动生成)</h6>
+            <div class="radar-container">
+                <canvas id="skillRadarChart"></canvas>
+            </div>
+
+            <h6 class="fw-bold mt-5 mb-3 border-start border-4 border-primary ps-2" style="border-color: var(--primary-purple) !important;">系统解析建议</h6>
+            <div class="alert alert-info bg-opacity-10 border-0" style="color: var(--primary-purple); background-color: rgba(139, 92, 246, 0.1);">
+                <i class="fa-solid fa-lightbulb me-2"></i> 候选人具备丰富的微服务架构经验，技能雷达显示其后端架构与数据库能力突出，但在前端工程化方面较弱。整体岗位匹配度达 <strong>92%</strong>，建议优先安排技术一面。
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+    <script>
+        // Kanban Data
+        const kanbanData = [
+            { id: "col-new", title: "新投递简历", class: "col-new", count: 12, cards: [
+                { name: "张伟", job: "高级Java开发", exp: "5年", edu: "硕士", score: 92 },
+                { name: "王芳", job: "前端开发", exp: "3年", edu: "本科", score: 85 },
+                { name: "李雷", job: "C++音视频开发", exp: "2年", edu: "本科", score: 78 }
+            ]},
+            { id: "col-screening", title: "初筛通过 (笔试中)", class: "col-screening", count: 8, cards: [
+                { name: "赵云", job: "算法工程师", exp: "4年", edu: "博士", score: 96 },
+                { name: "孙权", job: "大数据开发", exp: "6年", edu: "本科", score: 88 }
+            ]},
+            { id: "col-interview", title: "面试阶段", class: "col-interview", count: 5, cards: [
+                { name: "刘备", job: "架构师", exp: "10年", edu: "硕士", score: 99 },
+                { name: "关羽", job: "高级Java开发", exp: "7年", edu: "本科", score: 90 }
+            ]},
+            { id: "col-offer", title: "录用审批/Offer", class: "col-offer", count: 3, cards: [
+                { name: "诸葛亮", job: "CTO储备", exp: "12年", edu: "博士", score: 98 }
+            ]}
+        ];
+
+        // Talent Pool Data
+        const talentData = [
+            { name: "马超", job: "前端开发", tags: ["Vue3", "TypeScript", "Webpack"], exp: "4年", edu: "本科", date: "2026-03-15", reason: "薪资不匹配" },
+            { name: "黄忠", job: "高级Java开发", tags: ["Spring Boot", "JVM调优", "MySQL"], exp: "8年", edu: "本科", date: "2026-03-10", reason: "HC冻结" },
+            { name: "张飞", job: "测试工程师", tags: ["Selenium", "JMeter", "Python"], exp: "3年", edu: "大专", date: "2026-03-05", reason: "面试未通过" },
+            { name: "貂蝉", job: "UI设计师", tags: ["Figma", "交互设计", "动效"], exp: "5年", edu: "本科", date: "2026-02-28", reason: "候选人放弃" },
+            { name: "吕布", job: "架构师", tags: ["高并发架构", "K8s", "Go"], exp: "9年", edu: "硕士", date: "2026-02-20", reason: "薪资不匹配" }
+        ];
+
+        let radarChartInstance = null;
+
+        $(document).ready(function() {
+            // Render Kanban
+            const $board = $('#kanban-board-container');
+            kanbanData.forEach(col => {
+                let cardsHtml = col.cards.map(card => `
+                    <div class="resume-card" data-bs-toggle="offcanvas" data-bs-target="#resumeDetailPanel" onclick="updateDetail('${card.name}', '${card.job}')">
+                        <div class="d-flex justify-content-between">
+                            <div class="candidate-name">${card.name}</div>
+                            <span class="badge bg-light text-dark border">${card.exp} | ${card.edu}</span>
+                        </div>
+                        <div class="apply-job"><i class="fa-solid fa-briefcase"></i> 投递：${card.job}</div>
+                        <div class="match-score">
+                            <span class="fw-bold" style="color: var(--primary-purple);">匹配度: ${card.score}%</span>
+                            <div class="progress-micro">
+                                <div class="progress-bar-micro" style="width: ${card.score}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                const colHtml = `
+                    <div class="kanban-column">
+                        <div class="kanban-col-header ${col.class}">
+                            <span>${col.title}</span>
+                            <span class="badge-count">${col.count}</span>
+                        </div>
+                        <div class="kanban-cards">
+                            ${cardsHtml}
+                        </div>
+                    </div>
+                `;
+                $board.append(colHtml);
+            });
+
+            // Render Talent Table
+            const $tbody = $('#talent-tbody');
+            talentData.forEach(person => {
+                const initial = person.name.charAt(0);
+                const tagsHtml = person.tags.map(t => `<span class="badge bg-secondary bg-opacity-10 text-secondary border me-1">${t}</span>`).join('');
+                
+                const tr = `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle">${initial}</div>
+                                <div>
+                                    <div class="fw-bold">${person.name}</div>
+                                    <div class="text-muted" style="font-size: 0.85rem;">历史投递：${person.job}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${tagsHtml}</td>
+                        <td>${person.exp}</td>
+                        <td>${person.edu}</td>
+                        <td>${person.date}</td>
+                        <td><span class="badge bg-danger bg-opacity-10 text-danger">${person.reason}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary rounded-pill px-3">查看简历</button>
+                        </td>
+                    </tr>
+                `;
+                $tbody.append(tr);
+            });
+
+            // Initialize Source Chart
+            initSourceChart();
+        });
+
+        // Update Offcanvas detail and chart
+        function updateDetail(name, job) {
+            $('#detail-name').text(name);
+            $('#detail-avatar').text(name.charAt(0));
+            $('#detail-job').text('应聘：' + job);
+
+            initRadarChart();
+        }
+
+        function initRadarChart() {
+            const ctx = document.getElementById('skillRadarChart').getContext('2d');
+            
+            if (radarChartInstance) {
+                radarChartInstance.destroy();
+            }
+
+            // Generate random data for demo
+            const dataPoints = [
+                Math.floor(Math.random() * 20) + 80, // 后端开发
+                Math.floor(Math.random() * 40) + 50, // 前端开发
+                Math.floor(Math.random() * 30) + 70, // 数据库
+                Math.floor(Math.random() * 30) + 60, // 架构设计
+                Math.floor(Math.random() * 20) + 80, // 算法数据结构
+                Math.floor(Math.random() * 20) + 80  // 工程化/DevOps
+            ];
+
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['后端开发', '前端开发', '数据库调优', '架构设计', '算法基础', '工程化'],
+                    datasets: [{
+                        label: '能力评估得分',
+                        data: dataPoints,
+                        backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                        borderColor: 'rgba(139, 92, 246, 1)',
+                        pointBackgroundColor: 'rgba(139, 92, 246, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(139, 92, 246, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                            grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                            pointLabels: { font: { size: 12 }, color: '#4b5563' },
+                            ticks: { display: false, max: 100, min: 0 }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function initSourceChart() {
+            const ctx = document.getElementById('sourceChart').getContext('2d');
+            sourceChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Boss直聘', '内部推荐', '校园招聘', '官网投递'],
+                    datasets: [{
+                        data: [45, 25, 20, 10],
+                        backgroundColor: ['#0d6efd', '#198754', '#0dcaf0', '#6c757d'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 14 } } }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+    </script>
+</body>
+</html>

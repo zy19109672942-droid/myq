@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script>
+        // 检查登录状态
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>面试排期 - 永奇招聘平台</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-orange: #f97316;
+            --light-orange: #ffedd5;
+            --text-main: #334155;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+        }
+        body { background-color: var(--bg-color); color: var(--text-main); font-family: sans-serif; }
+        
+        /* Navbar */
+        .navbar-custom { background-color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 1rem 2rem; }
+        .navbar-brand { font-weight: 700; color: #0f172a !important; }
+        .navbar-brand i { color: var(--primary-orange); margin-right: 10px; }
+        .nav-link { color: #64748b !important; font-weight: 500; margin: 0 10px; padding: 8px 16px !important; border-radius: 6px; }
+        .nav-link:hover, .nav-link.active { color: var(--primary-orange) !important; background-color: var(--light-orange); }
+
+        .container-fluid-custom { padding: 90px 40px 40px; }
+
+        /* Calendar Grid */
+        .calendar-container { background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); padding: 20px; }
+        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .cal-grid { display: grid; grid-template-columns: 80px repeat(5, 1fr); gap: 1px; background-color: #e2e8f0; border: 1px solid #e2e8f0; }
+        .cal-cell { background-color: #fff; min-height: 80px; padding: 10px; position: relative; }
+        .cal-cell.header { background-color: #f8fafc; font-weight: bold; text-align: center; padding: 15px 10px; min-height: auto; }
+        .cal-cell.time { background-color: #f8fafc; text-align: right; color: #64748b; font-size: 0.9rem; padding-top: 15px; border-right: 1px solid #e2e8f0; }
+        
+        .event-card {
+            background-color: var(--light-orange);
+            border-left: 4px solid var(--primary-orange);
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .event-card:hover { transform: scale(1.02); box-shadow: 0 2px 4px rgba(249, 115, 22, 0.2); }
+        .event-title { font-weight: bold; color: #c2410c; margin-bottom: 2px; }
+        .event-time { color: #9a3412; font-size: 0.8rem; }
+
+        /* Evaluation Section */
+        .eval-section { margin-top: 50px; background: var(--card-bg); border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .accordion-button:not(.collapsed) { background-color: var(--light-orange); color: #c2410c; box-shadow: none; }
+        .accordion-button:focus { box-shadow: none; border-color: rgba(249, 115, 22, 0.5); }
+        
+        .rating-stars { color: #cbd5e1; font-size: 1.5rem; cursor: pointer; }
+        .rating-stars .active { color: #fbbf24; }
+        
+        .form-range::-webkit-slider-thumb { background: var(--primary-orange); }
+        
+        .candidate-header { display: flex; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 20px; }
+        .candidate-avatar { width: 60px; height: 60px; background-color: #fdba74; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; margin-right: 20px; }
+        
+        /* Modal Styles */
+        .modal-header-orange { background-color: var(--primary-orange); color: white; }
+        .modal-header-orange .btn-close { filter: invert(1); }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html"><i class="fa-solid fa-code-branch"></i>永奇招聘平台</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">控制台</a></li>
+                    <li class="nav-item"><a class="nav-link" href="jobs.html">职位管理</a></li>
+                    <li class="nav-item"><a class="nav-link" href="resumes.html">简历中心</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="interviews.html">面试排期</a></li>
+                    <li class="nav-item"><a class="nav-link" href="tests.html">在线笔试</a></li>
+                    <li class="nav-item"><a class="nav-link" href="analysis.html">数据分析</a></li>
+                    <li class="nav-item"><a class="nav-link" href="settings.html">系统设置</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid-custom">
+        <!-- Dashboard Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm text-center py-4 rounded-4" style="background-color: var(--light-orange);">
+                    <h2 class="fw-bold text-orange mb-1" style="color: var(--primary-orange);">24</h2>
+                    <div class="text-muted small">本周计划面试数</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm text-center py-4 rounded-4">
+                    <h2 class="fw-bold text-success mb-1">18</h2>
+                    <div class="text-muted small">已完成面试</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm text-center py-4 rounded-4">
+                    <h2 class="fw-bold text-primary mb-1">85%</h2>
+                    <div class="text-muted small">面试通过率</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm text-center py-4 rounded-4">
+                    <h2 class="fw-bold text-danger mb-1">2</h2>
+                    <div class="text-muted small">候选人爽约</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Schedule Table -->
+        <div class="card border-0 shadow-sm mb-5 rounded-4 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold m-0"><i class="fa-solid fa-list-check" style="color: var(--primary-orange);"></i> 今日面试日程明细</h4>
+                <div class="d-flex gap-2">
+                    <input type="text" class="form-control form-control-sm" placeholder="搜索候选人/面试官...">
+                    <select class="form-select form-select-sm w-auto">
+                        <option>全部状态</option>
+                        <option>待面试</option>
+                        <option>面试中</option>
+                        <option>已结束</option>
+                    </select>
+                    <button class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-filter"></i> 筛选</button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>时间</th>
+                            <th>候选人</th>
+                            <th>应聘岗位</th>
+                            <th>面试轮次</th>
+                            <th>面试官</th>
+                            <th>面试形式</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold">09:30 - 10:30</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-secondary text-white d-flex justify-content-center align-items-center me-2" style="width: 32px; height: 32px;">赵</div>
+                                    <span>赵云</span>
+                                </div>
+                            </td>
+                            <td>前端开发工程师</td>
+                            <td><span class="badge bg-info text-dark">技术一面</span></td>
+                            <td>陈星</td>
+                            <td><i class="fa-solid fa-video text-primary"></i> 腾讯会议</td>
+                            <td><span class="badge bg-success bg-opacity-10 text-success border border-success">已结束</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-link text-decoration-none"><i class="fa-solid fa-pen-to-square"></i> 评价</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-primary">14:00 - 15:00</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-warning text-white d-flex justify-content-center align-items-center me-2" style="width: 32px; height: 32px;">黄</div>
+                                    <span>黄忠</span>
+                                </div>
+                            </td>
+                            <td>高级Java开发</td>
+                            <td><span class="badge bg-primary text-white">技术二面</span></td>
+                            <td>王海</td>
+                            <td><i class="fa-solid fa-video text-primary"></i> 腾讯会议</td>
+                            <td><span class="badge bg-warning bg-opacity-10 text-warning border border-warning">待面试</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-link text-decoration-none text-primary"><i class="fa-solid fa-right-to-bracket"></i> 进入会议</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-primary">16:30 - 17:30</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-danger text-white d-flex justify-content-center align-items-center me-2" style="width: 32px; height: 32px;">马</div>
+                                    <span>马超</span>
+                                </div>
+                            </td>
+                            <td>测试工程师</td>
+                            <td><span class="badge bg-secondary text-white">HR面</span></td>
+                            <td>刘备</td>
+                            <td><i class="fa-solid fa-building text-secondary"></i> 现场面试 (会议室A)</td>
+                            <td><span class="badge bg-warning bg-opacity-10 text-warning border border-warning">待面试</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-link text-decoration-none text-muted"><i class="fa-solid fa-bell"></i> 提醒</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-muted text-decoration-line-through">10:00 - 11:00</td>
+                            <td class="text-muted">孙权</td>
+                            <td class="text-muted">产品经理</td>
+                            <td><span class="badge bg-secondary text-white">初试</span></td>
+                            <td class="text-muted">诸葛亮</td>
+                            <td><i class="fa-solid fa-video text-muted"></i> 腾讯会议</td>
+                            <td><span class="badge bg-danger bg-opacity-10 text-danger border border-danger">已取消</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-link text-decoration-none text-muted" disabled>已归档</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav aria-label="Page navigation" class="mt-3">
+                <ul class="pagination pagination-sm justify-content-end mb-0">
+                    <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1">上一页</a></li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">下一页</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Interviewer Leaderboard -->
+        <div class="card border-0 shadow-sm mb-5 rounded-4 p-4" style="background: linear-gradient(135deg, #fff, #fff7ed);">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold m-0"><i class="fa-solid fa-ranking-star" style="color: var(--primary-orange);"></i> 面试官本月贡献榜</h4>
+                <button class="btn btn-sm btn-outline-orange" style="color: var(--primary-orange); border-color: var(--primary-orange);">查看全部</button>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center p-3 bg-white rounded-3 shadow-sm border border-warning border-opacity-25">
+                        <div class="fs-1 fw-bold text-warning me-3">1</div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold fs-5">王海</div>
+                            <div class="text-muted small">技术总监</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold text-orange" style="color: var(--primary-orange);">32 场</div>
+                            <div class="small text-muted">面试场次</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center p-3 bg-white rounded-3 shadow-sm border border-secondary border-opacity-25">
+                        <div class="fs-1 fw-bold text-secondary me-3">2</div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold fs-5">陈星</div>
+                            <div class="text-muted small">前端负责人</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold text-orange" style="color: var(--primary-orange);">28 场</div>
+                            <div class="small text-muted">面试场次</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center p-3 bg-white rounded-3 shadow-sm border border-danger border-opacity-25">
+                        <div class="fs-1 fw-bold text-danger me-3" style="color: #cd7f32 !important;">3</div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold fs-5">李博</div>
+                            <div class="text-muted small">AI总监</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold text-orange" style="color: var(--primary-orange);">20 场</div>
+                            <div class="small text-muted">面试场次</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sub Feature 1: Calendar -->
+        <div class="calendar-container" id="calendar">
+            <div class="cal-header">
+                <h3 class="fw-bold m-0"><i class="fa-regular fa-calendar-days" style="color: var(--primary-orange);"></i> 可视化面试日历</h3>
+                <div>
+                    <button class="btn btn-outline-secondary me-2"><i class="fa-solid fa-chevron-left"></i></button>
+                    <span class="fw-bold fs-5 me-2">2026年 4月 (第14周)</span>
+                    <button class="btn btn-outline-secondary me-3"><i class="fa-solid fa-chevron-right"></i></button>
+                    <button class="btn btn-warning text-white fw-bold" style="background-color: var(--primary-orange); border:none;" data-bs-toggle="modal" data-bs-target="#addInterviewModal"><i class="fa-solid fa-plus"></i> 新增面试安排</button>
+                </div>
+            </div>
+
+            <div class="cal-grid" id="calGrid">
+                <!-- Headers -->
+                <div class="cal-cell header border-0"></div>
+                <div class="cal-cell header">周一 (4/03)</div>
+                <div class="cal-cell header">周二 (4/04)</div>
+                <div class="cal-cell header">周三 (4/05)</div>
+                <div class="cal-cell header">周四 (4/06)</div>
+                <div class="cal-cell header">周五 (4/07)</div>
+                
+                <!-- Time Slots injected via JS -->
+            </div>
+        </div>
+
+        <!-- Sub Feature 2: Evaluation -->
+        <div class="eval-section" id="evaluation">
+            <h3 class="fw-bold mb-4"><i class="fa-solid fa-clipboard-check" style="color: var(--primary-orange);"></i> 结构化面试评价与反馈记录</h3>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="list-group" id="candidateList">
+                        <a href="#" class="list-group-item list-group-item-action active" style="background-color: var(--primary-orange); border-color: var(--primary-orange);" aria-current="true">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1 fw-bold">张三 - 高级Java开发</h6>
+                                <small>一面已结束</small>
+                            </div>
+                            <p class="mb-1 text-white-50">面试官：王海 (技术总监)</p>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1 fw-bold">李四 - 前端开发</h6>
+                                <small class="text-muted">待评价</small>
+                            </div>
+                            <p class="mb-1 text-muted">面试官：陈星 (前端负责人)</p>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1 fw-bold">王五 - 算法工程师</h6>
+                                <small class="text-muted">二面已结束</small>
+                            </div>
+                            <p class="mb-1 text-muted">面试官：李博 (AI总监)</p>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="candidate-header">
+                                <div class="candidate-avatar">张</div>
+                                <div>
+                                    <h4 class="fw-bold m-0">张三</h4>
+                                    <div class="text-muted mt-1">面试岗位：高级Java开发 | 轮次：技术一面</div>
+                                </div>
+                                <div class="ms-auto text-end">
+                                    <button class="btn btn-outline-primary btn-sm rounded-pill mb-1">查看简历</button><br>
+                                    <span class="badge bg-success bg-opacity-10 text-success">技术一面已通过</span>
+                                </div>
+                            </div>
+
+                            <form>
+                                <div class="accordion" id="evalAccordion">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header"><button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">1. 基础编程与架构能力打分</button></h2>
+                                        <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#evalAccordion">
+                                            <div class="accordion-body">
+                                                <div class="mb-3 d-flex justify-content-between align-items-center">
+                                                    <span>Java基础及并发编程：</span>
+                                                    <div class="rating-stars"><i class="fa-solid fa-star active"></i><i class="fa-solid fa-star active"></i><i class="fa-solid fa-star active"></i><i class="fa-solid fa-star active"></i><i class="fa-solid fa-star"></i></div>
+                                                </div>
+                                                <div class="mb-3 d-flex justify-content-between align-items-center">
+                                                    <span>微服务架构与设计模式：</span>
+                                                    <div class="rating-stars"><i class="fa-solid fa-star active"></i><i class="fa-solid fa-star active"></i><i class="fa-solid fa-star active"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                                                </div>
+                                                <div class="mb-3 d-flex justify-content-between align-items-center">
+                                                    <span>数据库优化与SQL能力：</span>
+                                                    <div class="rating-stars"><i class="fa-solid fa-star active"></i><i class="fa-solid fa-star active"></i><i class="fa-solid fa-star active"></i><i class="fa-solid fa-star active"></i><i class="fa-solid fa-star active"></i></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">2. 综合素质评估</button></h2>
+                                        <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#evalAccordion">
+                                            <div class="accordion-body">
+                                                <label class="form-label">沟通表达能力 (1-10分)</label>
+                                                <input type="range" class="form-range" min="1" max="10" value="8">
+                                                <label class="form-label mt-3">抗压能力与稳定性 (1-10分)</label>
+                                                <input type="range" class="form-range" min="1" max="10" value="7">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header"><button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">3. 面试官综合评语与结论</button></h2>
+                                        <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#evalAccordion">
+                                            <div class="accordion-body">
+                                                <textarea class="form-control mb-3" rows="4" placeholder="请详细记录面试亮点与不足...">候选人基础扎实，对MySQL底层原理有较深理解。但在大型分布式系统高可用设计上的实战经验略显不足。整体沟通顺畅，学习能力强，建议通过一面，推荐进入二面考察其系统设计能力。</textarea>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input" type="radio" name="result" id="pass" checked>
+                                                            <label class="form-check-label text-success fw-bold" for="pass">通过 (进入下一轮)</label>
+                                                        </div>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input" type="radio" name="result" id="fail">
+                                                            <label class="form-check-label text-danger fw-bold" for="fail">淘汰 (结束流程)</label>
+                                                        </div>
+                                                    </div>
+                                                    <button type="button" class="btn btn-warning text-white fw-bold px-4" style="background-color: var(--primary-orange); border:none;">提交评价</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Add Interview Modal -->
+        <div class="modal fade" id="addInterviewModal" tabindex="-1" aria-labelledby="addInterviewModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header modal-header-orange">
+                        <h5 class="modal-title" id="addInterviewModalLabel"><i class="fa-solid fa-plus-circle"></i> 新增面试安排</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label class="form-label">候选人姓名</label>
+                                <select class="form-select">
+                                    <option>请选择候选人...</option>
+                                    <option>刘备 - 前端开发</option>
+                                    <option>关羽 - 后端开发</option>
+                                    <option>张飞 - 测试工程师</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">面试轮次</label>
+                                <select class="form-select">
+                                    <option>初试</option>
+                                    <option>技术一面</option>
+                                    <option>技术二面</option>
+                                    <option>HR面</option>
+                                    <option>终面</option>
+                                </select>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">日期</label>
+                                    <input type="date" class="form-control">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">时间</label>
+                                    <input type="time" class="form-control">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">面试官</label>
+                                <select class="form-select" multiple>
+                                    <option>王海 (技术总监)</option>
+                                    <option>陈星 (前端负责人)</option>
+                                    <option>李博 (AI总监)</option>
+                                </select>
+                                <div class="form-text">按住 Ctrl (Windows) 或 Command (Mac) 可多选。</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">面试形式</label>
+                                <div class="d-flex gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="interviewType" id="online" checked>
+                                        <label class="form-check-label" for="online">视频面试 (腾讯会议)</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="interviewType" id="offline">
+                                        <label class="form-check-label" for="offline">现场面试</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-warning text-white fw-bold" style="background-color: var(--primary-orange); border:none;">发送面试邀请</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Generate Calendar Grid
+            const times = ["09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+            const $grid = $('#calGrid');
+            
+            // Events Data mapping time index and day index (1-5)
+            const events = [
+                { timeIdx: 1, dayIdx: 1, title: "技术一面 - 张三", time: "10:00 - 11:00", type: "Java岗", interviewer: "王海" },
+                { timeIdx: 4, dayIdx: 2, title: "初试 - 李四", time: "14:00 - 15:00", type: "前端岗", interviewer: "陈星" },
+                { timeIdx: 5, dayIdx: 2, title: "终面 - 王五", time: "15:00 - 16:00", type: "算法岗", interviewer: "李博" },
+                { timeIdx: 2, dayIdx: 4, title: "HR面 - 赵六", time: "11:00 - 12:00", type: "测试岗", interviewer: "HR" },
+                { timeIdx: 6, dayIdx: 5, title: "二面 - 钱七", time: "16:00 - 17:00", type: "运维岗", interviewer: "刘总" }
+            ];
+
+            times.forEach((time, tIdx) => {
+                // Time column
+                $grid.append(`<div class="cal-cell time">${time}</div>`);
+                
+                // Days columns
+                for(let dIdx=1; dIdx<=5; dIdx++) {
+                    let cellHtml = `<div class="cal-cell">`;
+                    // Check if event exists
+                    let event = events.find(e => e.timeIdx === tIdx && e.dayIdx === dIdx);
+                    if(event) {
+                        cellHtml += `
+                            <div class="event-card" data-bs-toggle="tooltip" title="面试官: ${event.interviewer} | ${event.type}">
+                                <div class="event-title">${event.title}</div>
+                                <div class="event-time"><i class="fa-regular fa-clock"></i> ${event.time}</div>
+                            </div>
+                        `;
+                    }
+                    cellHtml += `</div>`;
+                    $grid.append(cellHtml);
+                }
+            });
+
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+
+            // Star Rating interaction
+            $('.rating-stars i').click(function() {
+                $(this).siblings().removeClass('active');
+                $(this).prevAll().addBack().addClass('active');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script>
+        // 检查登录状态
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>永奇软件工程岗位招聘在线平台 - 首页控制台</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --accent-warning: #f59e0b;
+        }
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+        /* Navbar */
+        .navbar-custom {
+            background-color: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #334155;
+            padding: 1rem 2rem;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--text-main) !important;
+            letter-spacing: 1px;
+        }
+        .navbar-brand i {
+            color: var(--accent-blue);
+            margin-right: 10px;
+            font-size: 1.5rem;
+        }
+        .nav-link {
+            color: var(--text-muted) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+            border-radius: 6px;
+            padding: 8px 16px !important;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #fff !important;
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        /* Hero Section */
+        .hero-section {
+            padding: 100px 0 60px;
+            text-align: center;
+            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
+            border-bottom: 1px solid #334155;
+            animation: fadeInDown 1s ease-out;
+        }
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* Content Sections */
+        .content-section {
+            padding: 80px 0;
+            min-height: 80vh;
+        }
+        .section-header {
+            margin-bottom: 50px;
+            display: flex;
+            align-items: center;
+        }
+        .section-header i {
+            font-size: 2rem;
+            color: var(--accent-blue);
+            margin-right: 15px;
+        }
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        /* Cards */
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid #334155;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            border-color: var(--accent-blue);
+        }
+        .stat-icon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 3rem;
+            opacity: 0.1;
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 15px 0;
+        }
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        .trend-up { color: var(--accent-green); }
+        .trend-down { color: #ef4444; }
+        
+        /* Charts Area */
+        .chart-container {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid #334155;
+            margin-top: 30px;
+        }
+        
+        /* Todo List */
+        .todo-container {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid #334155;
+            overflow: hidden;
+        }
+        .todo-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #334155;
+            background-color: rgba(255,255,255,0.02);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .todo-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .todo-item {
+            padding: 20px 25px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: flex-start;
+            transition: background-color 0.2s;
+        }
+        .todo-item:hover {
+            background-color: rgba(255,255,255,0.05);
+        }
+        .todo-item:last-child {
+            border-bottom: none;
+        }
+        .todo-checkbox {
+            margin-right: 20px;
+            margin-top: 5px;
+        }
+        .form-check-input {
+            width: 1.5em;
+            height: 1.5em;
+            background-color: #334155;
+            border-color: #475569;
+            cursor: pointer;
+        }
+        .form-check-input:checked {
+            background-color: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+        .todo-content {
+            flex-grow: 1;
+        }
+        .todo-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .todo-meta {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            gap: 15px;
+        }
+        .todo-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-urgent { background-color: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .badge-normal { background-color: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--primary-bg); }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s ease-out;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #0b1121;
+            padding: 40px 0;
+            border-top: 1px solid #334155;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <i class="fa-solid fa-code-branch"></i>永奇招聘平台
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="index.html">控制台</a></li>
+                    <li class="nav-item"><a class="nav-link" href="jobs.html">职位管理</a></li>
+                    <li class="nav-item"><a class="nav-link" href="resumes.html">简历中心</a></li>
+                    <li class="nav-item"><a class="nav-link" href="interviews.html">面试排期</a></li>
+                    <li class="nav-item"><a class="nav-link" href="tests.html">在线笔试</a></li>
+                    <li class="nav-item"><a class="nav-link" href="analysis.html">数据分析</a></li>
+                    <li class="nav-item"><a class="nav-link" href="settings.html">系统设置</a></li>
+                    <li class="nav-item ms-3 d-flex align-items-center">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="rounded-circle" width="35" style="border: 2px solid #3b82f6;">
+                        <span class="ms-2 fw-bold">HR 经理</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="hero-title">全局数据尽在掌握</h1>
+            <p class="lead text-muted mb-4">实时追踪研发团队招聘进度，智能规划每一项待办任务。</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="#overview" class="btn btn-primary btn-lg px-4 rounded-pill" style="background-color: var(--accent-blue); border: none;">
+                    <i class="fa-solid fa-chart-pie ms-1"></i> 数据概览
+                </a>
+                <a href="#todo" class="btn btn-outline-light btn-lg px-4 rounded-pill">
+                    <i class="fa-solid fa-list-check ms-1"></i> 待办事项
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sub Feature 1: 数据概览 -->
+    <section id="overview" class="content-section reveal">
+        <div class="container">
+            <div class="section-header">
+                <i class="fa-solid fa-chart-line"></i>
+                <h2 class="section-title">核心数据概览卡片</h2>
+            </div>
+            
+            <div class="row g-4" id="stats-container">
+                <!-- Data injected by JS -->
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-lg-8">
+                    <div class="chart-container">
+                        <h4 class="mb-4 fw-bold">本周投递与处理趋势</h4>
+                        <div style="height: 300px; position: relative;">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="chart-container">
+                        <h4 class="mb-4 fw-bold">各技术栈需求占比</h4>
+                        <div style="height: 300px; position: relative;">
+                            <canvas id="stackChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sub Feature 2: 待办事项 -->
+    <section id="todo" class="content-section reveal">
+        <div class="container">
+            <div class="section-header">
+                <i class="fa-solid fa-clipboard-list"></i>
+                <h2 class="section-title">个人待办事项追踪</h2>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="todo-container">
+                        <div class="todo-header">
+                            <h4 class="m-0 fw-bold">今日任务清单</h4>
+                            <div>
+                                <button class="btn btn-sm btn-outline-light me-2">全部标记完成</button>
+                                <button class="btn btn-sm btn-primary" style="background-color: var(--accent-blue); border: none;">
+                                    <i class="fa-solid fa-plus"></i> 新增任务
+                                </button>
+                            </div>
+                        </div>
+                        <ul class="todo-list" id="todo-list-container">
+                            <!-- Data injected by JS -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer text-center">
+        <div class="container">
+            <p class="text-muted mb-0">© 2026 永奇软件工程岗位招聘在线平台. 保留所有权利。</p>
+            <p class="text-muted mt-2"><i class="fa-solid fa-shield-halved"></i> 安全驱动，智能招聘</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+    <script>
+        // Real Data Generation for Stats
+        const statsData = [
+            { label: "今日新增简历数", value: "328", trend: "+12.5%", isUp: true, icon: "fa-file-lines", color: "var(--accent-blue)" },
+            { label: "待处理面试数", value: "45", trend: "-2.1%", isUp: false, icon: "fa-users-viewfinder", color: "var(--accent-warning)" },
+            { label: "本周成功入职", value: "12", trend: "+5.0%", isUp: true, icon: "fa-handshake", color: "var(--accent-green)" },
+            { label: "研发HC完成率", value: "68%", trend: "+10.2%", isUp: true, icon: "fa-bullseye", color: "var(--accent-purple)" }
+        ];
+
+        // Real Data for Todos
+        const todoData = [
+            { id: 1, title: "评估前端高级工程师候选人 李明 的笔试成绩", time: "上午 10:00", type: "笔试阅卷", priority: "urgent", isDone: false },
+            { id: 2, title: "参与Java架构师岗 二面 (候选人：张伟)", time: "下午 14:30", type: "技术面试", priority: "urgent", isDone: false },
+            { id: 3, title: "审核并发布 '数据分析师' 岗位招聘信息", time: "下午 16:00", type: "职位发布", priority: "normal", isDone: false },
+            { id: 4, title: "整理本周招聘漏斗分析报表并发送给研发总监", time: "明天 09:30", type: "数据报表", priority: "normal", isDone: false },
+            { id: 5, title: "跟进已发Offer候选人 王强 的入职材料准备情况", time: "明天 11:00", type: "入职跟进", priority: "normal", isDone: false },
+            { id: 6, title: "配置新入职员工的系统角色与权限", time: "明天 15:00", type: "系统设置", priority: "normal", isDone: false },
+            { id: 7, title: "更新C++基础开发题库内容", time: "本周五", type: "题库管理", priority: "normal", isDone: false }
+        ];
+
+        $(document).ready(function() {
+            // Render Stats
+            const $statsContainer = $('#stats-container');
+            statsData.forEach(stat => {
+                const trendClass = stat.isUp ? 'trend-up' : 'trend-down';
+                const trendIcon = stat.isUp ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+                const cardHtml = `
+                    <div class="col-md-6 col-xl-3">
+                        <div class="stat-card" style="border-top: 4px solid ${stat.color}">
+                            <i class="fa-solid ${stat.icon} stat-icon" style="color: ${stat.color}"></i>
+                            <div class="stat-label">${stat.label}</div>
+                            <div class="stat-value">${stat.value}</div>
+                            <div class="${trendClass} fw-bold">
+                                <i class="fa-solid ${trendIcon}"></i> ${stat.trend} 较上周
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $statsContainer.append(cardHtml);
+            });
+
+            // Render Todos
+            const $todoContainer = $('#todo-list-container');
+            todoData.forEach(todo => {
+                const badgeClass = todo.priority === 'urgent' ? 'badge-urgent' : 'badge-normal';
+                const priorityText = todo.priority === 'urgent' ? '紧急' : '常规';
+                const todoHtml = `
+                    <li class="todo-item">
+                        <div class="todo-checkbox">
+                            <input class="form-check-input" type="checkbox" id="todo-${todo.id}">
+                        </div>
+                        <div class="todo-content">
+                            <div class="todo-title">
+                                <label for="todo-${todo.id}" style="cursor:pointer;">${todo.title}</label>
+                            </div>
+                            <div class="todo-meta">
+                                <span><i class="fa-regular fa-clock"></i> ${todo.time}</span>
+                                <span><i class="fa-solid fa-tag"></i> ${todo.type}</span>
+                                <span class="todo-badge ${badgeClass}">${priorityText}</span>
+                            </div>
+                        </div>
+                        <div class="ms-auto">
+                            <button class="btn btn-sm btn-outline-secondary border-0"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                        </div>
+                    </li>
+                `;
+                $todoContainer.append(todoHtml);
+            });
+
+            // Todo Checkbox Logic
+            $('.form-check-input').on('change', function() {
+                const $title = $(this).closest('.todo-item').find('.todo-title');
+                if ($(this).is(':checked')) {
+                    $title.css({'text-decoration': 'line-through', 'color': 'var(--text-muted)'});
+                } else {
+                    $title.css({'text-decoration': 'none', 'color': 'var(--text-main)'});
+                }
+            });
+
+            // Scroll Animation Reveal
+            function reveal() {
+                var reveals = document.querySelectorAll(".reveal");
+                for (var i = 0; i < reveals.length; i++) {
+                    var windowHeight = window.innerHeight;
+                    var elementTop = reveals[i].getBoundingClientRect().top;
+                    var elementVisible = 100;
+                    if (elementTop < windowHeight - elementVisible) {
+                        reveals[i].classList.add("active");
+                    }
+                }
+            }
+            window.addEventListener("scroll", reveal);
+            reveal(); // Trigger on load
+
+            // Chart.js - Trend Chart
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                    datasets: [
+                        {
+                            label: '新增简历',
+                            data: [120, 190, 300, 250, 220, 80, 50],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: '已处理简历',
+                            data: [80, 150, 200, 220, 180, 60, 40],
+                            borderColor: '#10b981',
+                            backgroundColor: 'transparent',
+                            borderWidth: 3,
+                            borderDash: [5, 5],
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#f8fafc' } }
+                    },
+                    scales: {
+                        x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                        y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+
+            // Chart.js - Stack Chart
+            const ctxStack = document.getElementById('stackChart').getContext('2d');
+            new Chart(ctxStack, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Java开发', '前端Vue/React', 'C++架构', 'Python算法', '软件测试'],
+                    datasets: [{
+                        data: [35, 25, 15, 15, 10],
+                        backgroundColor: [
+                            '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#f8fafc', padding: 20 } }
+                    },
+                    cutout: '75%'
+                }
+            });
+        });
+    </script>
+</body>
+</html>

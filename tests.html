@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script>
+        // 检查登录状态
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线笔试 - 永奇招聘平台</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-indigo: #4f46e5;
+            --light-indigo: #e0e7ff;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+        }
+        body { background-color: var(--bg-color); color: var(--text-main); font-family: sans-serif; }
+        
+        /* Navbar */
+        .navbar-custom { background-color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 1rem 2rem; }
+        .navbar-brand { font-weight: 700; color: #0f172a !important; }
+        .navbar-brand i { color: var(--primary-indigo); margin-right: 10px; }
+        .nav-link { color: #64748b !important; font-weight: 500; margin: 0 10px; padding: 8px 16px !important; border-radius: 6px; }
+        .nav-link:hover, .nav-link.active { color: var(--primary-indigo) !important; background-color: var(--light-indigo); }
+
+        .container-fluid-custom { padding: 90px 40px 40px; }
+
+        /* Test Stats Overview */
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(79, 70, 229, 0.15);
+        }
+        .stat-card .icon-wrapper {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--light-indigo);
+            color: var(--primary-indigo);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 10px;
+        }
+        .stat-card h3 {
+            font-weight: 800;
+            color: var(--primary-indigo);
+            margin: 0;
+            font-size: 2rem;
+        }
+        .stat-card p {
+            color: #64748b;
+            margin: 5px 0 0;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Question Bank Section */
+        .qbank-section, .grading-section { background: var(--card-bg); border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .nav-pills .nav-link { color: #64748b; font-weight: bold; border-radius: 8px; margin-right: 10px; }
+        .nav-pills .nav-link.active { background-color: var(--primary-indigo); color: #fff; }
+        
+        .code-block { background-color: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 0.9rem; margin-top: 10px; }
+        .difficulty-badge { font-size: 0.75rem; padding: 5px 10px; border-radius: 20px; font-weight: bold; }
+        .diff-easy { background-color: #dcfce7; color: #4338ca; }
+        .diff-medium { background-color: #fef08a; color: #b45309; }
+        .diff-hard { background-color: #fee2e2; color: #b91c1c; }
+
+        .question-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 15px; transition: box-shadow 0.2s; }
+        .question-card:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .question-title { font-size: 1.1rem; font-weight: bold; color: #1e293b; margin-bottom: 10px; }
+
+        /* Grading Section */
+        .grading-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .score-circle { width: 80px; height: 80px; border-radius: 50%; border: 4px solid var(--primary-indigo); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: bold; color: var(--primary-indigo); margin: 0 auto; }
+        .progress-thin { height: 6px; border-radius: 3px; background-color: #e2e8f0; }
+        .progress-thin .progress-bar { background-color: var(--primary-indigo); }
+        
+        .student-list { max-height: 400px; overflow-y: auto; }
+        .student-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #e2e8f0; cursor: pointer; transition: background 0.2s; }
+        .student-item:hover { background-color: var(--light-indigo); }
+        .student-item.active { background-color: var(--light-indigo); border-left: 4px solid var(--primary-indigo); }
+        .student-item:last-child { border-bottom: none; }
+        
+        .radar-chart-placeholder {
+            width: 100%;
+            height: 250px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        /* Generate Paper Modal */
+        .modal-header-indigo { background-color: var(--primary-indigo); color: white; }
+        .modal-header-indigo .btn-close { filter: invert(1); }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html"><i class="fa-solid fa-code-branch"></i>永奇招聘平台</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">控制台</a></li>
+                    <li class="nav-item"><a class="nav-link" href="jobs.html">职位管理</a></li>
+                    <li class="nav-item"><a class="nav-link" href="resumes.html">简历中心</a></li>
+                    <li class="nav-item"><a class="nav-link" href="interviews.html">面试排期</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="tests.html">在线笔试</a></li>
+                    <li class="nav-item"><a class="nav-link" href="analysis.html">数据分析</a></li>
+                    <li class="nav-item"><a class="nav-link" href="settings.html">系统设置</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid-custom">
+        <!-- Dashboard Stats Overview -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="icon-wrapper"><i class="fa-solid fa-database"></i></div>
+                    <h3>1,258</h3>
+                    <p>题库总题数</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="icon-wrapper"><i class="fa-solid fa-file-contract"></i></div>
+                    <h3>45</h3>
+                    <p>活跃试卷</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="icon-wrapper"><i class="fa-solid fa-user-pen"></i></div>
+                    <h3>326</h3>
+                    <p>本月参与测评人数</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="icon-wrapper"><i class="fa-solid fa-robot"></i></div>
+                    <h3>92%</h3>
+                    <p>自动阅卷率</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sub Feature 3: Anti-Cheat Monitoring -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm rounded-4 p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold m-0"><i class="fa-solid fa-shield-halved" style="color: var(--primary-indigo);"></i> 实时防作弊监控大屏</h4>
+                        <span class="badge bg-danger pulse-animation"><i class="fa-solid fa-circle text-white" style="font-size: 0.5rem; vertical-align: middle;"></i> 监控运行中</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>监控对象</th>
+                                    <th>所属试卷</th>
+                                    <th>切屏次数</th>
+                                    <th>异常抓拍</th>
+                                    <th>代码相似度</th>
+                                    <th>风险等级</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><div class="fw-bold">张三</div><div class="small text-muted">ID: 9527</div></td>
+                                    <td>前端开发岗笔试题</td>
+                                    <td><span class="badge bg-danger">12 次</span></td>
+                                    <td><span class="text-danger"><i class="fa-solid fa-camera"></i> 3张异常</span></td>
+                                    <td>--</td>
+                                    <td><span class="badge bg-danger">高风险</span></td>
+                                    <td><button class="btn btn-sm btn-outline-danger">强制交卷</button></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="fw-bold">李四</div><div class="small text-muted">ID: 9528</div></td>
+                                    <td>Java后端开发卷</td>
+                                    <td><span class="badge bg-warning text-dark">3 次</span></td>
+                                    <td><span class="text-success"><i class="fa-solid fa-camera"></i> 正常</span></td>
+                                    <td>85% (与库中代码高度相似)</td>
+                                    <td><span class="badge bg-warning text-dark">中风险</span></td>
+                                    <td><button class="btn btn-sm btn-outline-warning">发送警告</button></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="fw-bold">王五</div><div class="small text-muted">ID: 9529</div></td>
+                                    <td>算法工程师卷</td>
+                                    <td><span class="badge bg-success">0 次</span></td>
+                                    <td><span class="text-success"><i class="fa-solid fa-camera"></i> 正常</span></td>
+                                    <td>12%</td>
+                                    <td><span class="badge bg-success">安全</span></td>
+                                    <td><button class="btn btn-sm btn-outline-secondary" disabled>无需操作</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sub Feature 1: Question Bank -->
+        <div class="qbank-section" id="qbank">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold m-0"><i class="fa-solid fa-layer-group" style="color: var(--primary-indigo);"></i> 在线笔试题库搭建与管理</h3>
+                <div>
+                    <button class="btn btn-outline-primary me-2 border-indigo text-indigo"><i class="fa-solid fa-upload"></i> 批量导入题目</button>
+                    <button class="btn btn-primary fw-bold" style="background-color: var(--primary-indigo); border:none;" data-bs-toggle="modal" data-bs-target="#generatePaperModal"><i class="fa-solid fa-wand-magic-sparkles"></i> 智能组卷</button>
+                </div>
+            </div>
+
+            <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="pills-frontend-tab" data-bs-toggle="pill" data-bs-target="#pills-frontend" type="button" role="tab">前端开发题库</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pills-backend-tab" data-bs-toggle="pill" data-bs-target="#pills-backend" type="button" role="tab">后端开发题库</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pills-algo-tab" data-bs-toggle="pill" data-bs-target="#pills-algo" type="button" role="tab">算法题库</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="pills-tabContent">
+                <!-- Frontend Tab -->
+                <div class="tab-pane fade show active" id="pills-frontend" role="tabpanel">
+                    <div class="question-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="question-title">1. 实现一个深拷贝函数 (Deep Clone)</div>
+                            <span class="difficulty-badge diff-medium">中等</span>
+                        </div>
+                        <p class="text-muted small mb-2">要求：支持循环引用，支持 Date、RegExp 等特殊对象类型。</p>
+                        <div class="code-block">
+function deepClone(obj, hash = new WeakMap()) {
+    if (obj === null || typeof obj !== 'object') return obj;
+    if (obj instanceof Date) return new Date(obj);
+    if (obj instanceof RegExp) return new RegExp(obj);
+    if (hash.has(obj)) return hash.get(obj);
+    
+    let cloneObj = new obj.constructor();
+    hash.set(obj, cloneObj);
+    
+    for (let key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            cloneObj[key] = deepClone(obj[key], hash);
+        }
+    }
+    return cloneObj;
+}
+                        </div>
+                        <div class="mt-3 text-end">
+                            <button class="btn btn-sm btn-outline-secondary me-2"><i class="fa-solid fa-pen"></i> 编辑</button>
+                            <button class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i> 删除</button>
+                        </div>
+                    </div>
+
+                    <div class="question-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="question-title">2. 解释 CSS 盒模型及 box-sizing 属性</div>
+                            <span class="difficulty-badge diff-easy">简单</span>
+                        </div>
+                        <p class="text-muted small mb-2">题型：简答题 | 标签：CSS3, 基础概念</p>
+                        <div class="mt-3 text-end">
+                            <button class="btn btn-sm btn-outline-secondary me-2"><i class="fa-solid fa-pen"></i> 编辑</button>
+                            <button class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i> 删除</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backend Tab -->
+                <div class="tab-pane fade" id="pills-backend" role="tabpanel">
+                    <div class="question-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="question-title">1. 编写 SQL 查询获取部门薪水前三高的员工</div>
+                            <span class="difficulty-badge diff-hard">困难</span>
+                        </div>
+                        <p class="text-muted small mb-2">表结构：Employee (Id, Name, Salary, DepartmentId), Department (Id, Name)</p>
+                        <div class="code-block">
+SELECT d.Name AS Department, e.Name AS Employee, e.Salary
+FROM Employee e
+JOIN Department d ON e.DepartmentId = d.Id
+WHERE (
+    SELECT COUNT(DISTINCT Salary)
+    FROM Employee
+    WHERE Salary > e.Salary AND DepartmentId = e.DepartmentId
+) < 3;
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Algo Tab -->
+                <div class="tab-pane fade" id="pills-algo" role="tabpanel">
+                    <div class="question-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="question-title">1. 两数之和 (Two Sum)</div>
+                            <span class="difficulty-badge diff-easy">简单</span>
+                        </div>
+                        <p class="text-muted small mb-2">给定一个整数数组 nums 和一个整数目标值 target，请你在该数组中找出和为目标值 target 的那两个整数，并返回它们的数组下标。</p>
+                        <div class="code-block">
+class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < nums.length; i++) {
+            int complement = target - nums[i];
+            if (map.containsKey(complement)) {
+                return new int[] { map.get(complement), i };
+            }
+            map.put(nums[i], i);
+        }
+        throw new IllegalArgumentException("No two sum solution");
+    }
+}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sub Feature 2: Auto Grading -->
+        <div class="grading-section" id="grading">
+            <h3 class="fw-bold mb-4"><i class="fa-solid fa-robot" style="color: var(--primary-indigo);"></i> 自动阅卷与成绩分析报告</h3>
+            
+            <div class="row">
+                <!-- Student List -->
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <h6 class="mb-0 fw-bold">最近交卷候选人</h6>
+                        </div>
+                        <div class="student-list">
+                            <div class="student-item active">
+                                <div>
+                                    <div class="fw-bold text-dark">李明</div>
+                                    <div class="small text-muted">前端高级工程师卷</div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-success bg-opacity-10 text-success">已阅卷</span>
+                                    <div class="fw-bold text-indigo mt-1">92 分</div>
+                                </div>
+                            </div>
+                            <div class="student-item">
+                                <div>
+                                    <div class="fw-bold text-dark">王强</div>
+                                    <div class="small text-muted">Java后端开发卷</div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-success bg-opacity-10 text-success">已阅卷</span>
+                                    <div class="fw-bold text-indigo mt-1">85 分</div>
+                                </div>
+                            </div>
+                            <div class="student-item">
+                                <div>
+                                    <div class="fw-bold text-dark">张伟</div>
+                                    <div class="small text-muted">算法工程师卷</div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-warning bg-opacity-10 text-warning">部分客观题已阅</span>
+                                    <div class="fw-bold text-muted mt-1">--</div>
+                                </div>
+                            </div>
+                            <div class="student-item">
+                                <div>
+                                    <div class="fw-bold text-dark">赵丽</div>
+                                    <div class="small text-muted">前端基础卷</div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-danger bg-opacity-10 text-danger">疑似作弊</span>
+                                    <div class="fw-bold text-danger mt-1">0 分</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grading Report Details -->
+                <div class="col-md-8">
+                    <div class="grading-card bg-white shadow-sm h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                            <div>
+                                <h4 class="fw-bold mb-1">李明 的测评报告</h4>
+                                <span class="text-muted small">交卷时间：2026-04-03 14:30:22 | 用时：45分钟 / 60分钟</span>
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-download"></i> 导出PDF</button>
+                        </div>
+
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-md-4 text-center border-end">
+                                <div class="score-circle mb-2">92</div>
+                                <div class="fw-bold text-success">综合评级：A (优秀)</div>
+                            </div>
+                            <div class="col-md-8 px-4">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="fw-bold">代码正确性 (通过所有测试用例)</span>
+                                        <span>35/40 分</span>
+                                    </div>
+                                    <div class="progress progress-thin"><div class="progress-bar" style="width: 87.5%"></div></div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="fw-bold">时间/空间复杂度 (性能)</span>
+                                        <span>25/30 分</span>
+                                    </div>
+                                    <div class="progress progress-thin"><div class="progress-bar" style="width: 83.3%"></div></div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="fw-bold">代码规范与可读性</span>
+                                        <span>20/20 分</span>
+                                    </div>
+                                    <div class="progress progress-thin"><div class="progress-bar bg-success" style="width: 100%"></div></div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="fw-bold">客观题得分</span>
+                                        <span>12/10 分 (含附加题)</span>
+                                    </div>
+                                    <div class="progress progress-thin"><div class="progress-bar bg-success" style="width: 100%"></div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-light rounded-3 mb-4">
+                            <h6 class="fw-bold mb-2"><i class="fa-solid fa-triangle-exclamation text-warning"></i> AI 代码审查意见</h6>
+                            <p class="small text-muted mb-0">该候选人在“深拷贝实现”题中，完整处理了循环引用问题，使用了 `WeakMap`，内存控制极佳。但在处理特殊对象类型时，遗漏了 `Symbol` 类型的拷贝。整体代码结构清晰，命名规范，具备良好的工程素养。</p>
+                        </div>
+                        
+                        <div class="text-end">
+                            <button class="btn btn-primary px-4 fw-bold" style="background-color: var(--primary-indigo); border:none;">查看详细答卷</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Paper Modal -->
+        <div class="modal fade" id="generatePaperModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header modal-header-indigo">
+                        <h5 class="modal-title"><i class="fa-solid fa-wand-magic-sparkles"></i> 智能组卷设置</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <form>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">试卷名称</label>
+                                    <input type="text" class="form-control" value="2026春季前端开发岗笔试题">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">适用岗位类别</label>
+                                    <select class="form-select">
+                                        <option selected>前端开发</option>
+                                        <option>后端开发</option>
+                                        <option>测试工程师</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">难度分布 (总分 100分)</label>
+                                <div class="d-flex align-items-center gap-3 mb-2">
+                                    <span class="badge diff-easy" style="width: 80px;">简单题</span>
+                                    <input type="range" class="form-range" min="0" max="100" value="30">
+                                    <span class="fw-bold" style="width: 50px;">30%</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-3 mb-2">
+                                    <span class="badge diff-medium" style="width: 80px;">中等题</span>
+                                    <input type="range" class="form-range" min="0" max="100" value="50">
+                                    <span class="fw-bold" style="width: 50px;">50%</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="badge diff-hard" style="width: 80px;">困难题</span>
+                                    <input type="range" class="form-range" min="0" max="100" value="20">
+                                    <span class="fw-bold" style="width: 50px;">20%</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">包含题型</label>
+                                <div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">单选题</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">多选题</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">简答题</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">在线编程题</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-check form-switch mt-4">
+                                <input class="form-check-input" type="checkbox" role="switch" id="antiCheat" checked>
+                                <label class="form-check-label fw-bold text-danger" for="antiCheat">开启防作弊监控 (切屏记录、摄像头抓拍、代码查重)</label>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer border-0 bg-light">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-primary fw-bold" style="background-color: var(--primary-indigo); border:none;">生成试卷</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

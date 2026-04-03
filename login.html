@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>永奇软件工程岗位招聘在线平台 - 登录</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --border-color: #334155;
+        }
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+        }
+        
+        .login-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Left Side: Branding Panel */
+        .login-brand {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        /* Background Decorations */
+        .bg-shape-1, .bg-shape-2 {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.4;
+        }
+        .bg-shape-1 {
+            width: 400px;
+            height: 400px;
+            background-color: rgba(59, 130, 246, 0.4);
+            top: -100px;
+            left: -100px;
+        }
+        .bg-shape-2 {
+            width: 300px;
+            height: 300px;
+            background-color: rgba(139, 92, 246, 0.4);
+            bottom: -50px;
+            right: -50px;
+        }
+        
+        .brand-content {
+            z-index: 1;
+            animation: fadeInDown 1s ease-out;
+        }
+        .brand-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        .brand-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 80%;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Right Side: Login Form */
+        .login-form-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background-color: var(--primary-bg);
+            position: relative;
+        }
+        
+        .login-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px 30px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 450px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        .login-card h3 {
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .login-card p {
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+        
+        /* Form Inputs */
+        .form-label {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        
+        .input-group-text {
+            background-color: transparent;
+            border-color: var(--border-color);
+            color: var(--text-muted);
+        }
+        
+        .form-control {
+            background-color: transparent;
+            border-color: var(--border-color);
+            color: var(--text-main);
+            padding: 12px;
+        }
+        
+        .form-control:focus {
+            background-color: transparent;
+            border-color: var(--accent-blue);
+            color: var(--text-main);
+            box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+        }
+        
+        /* Error Message */
+        #errorMessage {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+        #errorMessage.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Buttons */
+        .btn-login {
+            background-color: var(--accent-blue);
+            border: none;
+            padding: 12px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            color: #fff;
+        }
+        
+        .btn-login:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-login:active {
+            transform: translateY(0);
+        }
+        
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 991.98px) {
+            .login-brand {
+                display: none !important;
+            }
+            .login-form-container {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-wrapper row m-0">
+        <!-- Left Side: Branding -->
+        <div class="col-lg-6 login-brand d-none d-lg-flex">
+            <div class="bg-shape-1"></div>
+            <div class="bg-shape-2"></div>
+            
+            <div class="brand-content">
+                <div class="brand-title">
+                    <i class="fa-solid fa-code-branch" style="color: var(--accent-blue); font-size: 3.5rem;"></i>
+                    <span>永奇招聘平台</span>
+                </div>
+                <p class="brand-subtitle">
+                    专为软件工程团队打造的现代化智能招聘管理系统。<br>
+                    全流程跟踪候选人，高效管理研发HC，安全可靠。
+                </p>
+                
+                <div class="mt-5 d-flex gap-4 justify-content-center">
+                    <div class="text-center">
+                        <i class="fa-solid fa-shield-halved text-success fs-2 mb-2"></i>
+                        <div class="text-muted small fw-bold">安全加密</div>
+                    </div>
+                    <div class="text-center">
+                        <i class="fa-solid fa-bolt text-warning fs-2 mb-2"></i>
+                        <div class="text-muted small fw-bold">极速响应</div>
+                    </div>
+                    <div class="text-center">
+                        <i class="fa-solid fa-chart-pie text-info fs-2 mb-2"></i>
+                        <div class="text-muted small fw-bold">数据驱动</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Side: Login Form -->
+        <div class="col-lg-6 login-form-container">
+            <div class="login-card">
+                <h3>欢迎回来</h3>
+                <p>请输入您的系统账号和密码</p>
+                
+                <!-- Login Form -->
+                <form id="loginForm" novalidate>
+                    <!-- Username Input -->
+                    <div class="mb-4">
+                        <label for="username" class="form-label">账号</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
+                            <input type="text" class="form-control" id="username" placeholder="请输入账号" required autocomplete="off">
+                        </div>
+                    </div>
+                    
+                    <!-- Password Input -->
+                    <div class="mb-4">
+                        <label for="password" class="form-label">密码</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
+                            <input type="password" class="form-control" id="password" placeholder="请输入密码" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="rememberMe" style="background-color: var(--primary-bg); border-color: var(--border-color);">
+                            <label class="form-check-label text-muted small" for="rememberMe">
+                                记住密码
+                            </label>
+                        </div>
+                        <a href="#" class="text-decoration-none small" style="color: var(--accent-blue);">忘记密码？</a>
+                    </div>
+                    
+                    <!-- Error Message Box -->
+                    <div id="errorMessage" class="d-none">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span id="errorText">账号或密码错误，请重试！</span>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-login w-100 mt-2" id="loginBtn">
+                        <span class="btn-text">登录系统</span>
+                        <span class="spinner-border spinner-border-sm d-none ms-2" role="status" aria-hidden="true"></span>
+                    </button>
+                    
+                    <div class="text-center mt-4">
+                        <p class="text-muted small mb-0">系统默认账号：mayongqi / 密码：123456</p>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Absolute Footer on Right Side -->
+            <div class="position-absolute bottom-0 w-100 text-center pb-3">
+                <small class="text-muted">© 2026 永奇软件工程岗位招聘在线平台</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            $('#loginForm').on('submit', function(e) {
+                e.preventDefault(); // 阻止表单默认提交
+                
+                const username = $('#username').val().trim();
+                const password = $('#password').val().trim();
+                const $errorMsg = $('#errorMessage');
+                const $btn = $('#loginBtn');
+                
+                // 简单的客户端验证校验是否为空
+                if(!username || !password) {
+                    showError('账号和密码不能为空！');
+                    return;
+                }
+                
+                // 模拟加载动画
+                $btn.prop('disabled', true);
+                $btn.find('.btn-text').text('正在验证...');
+                $btn.find('.spinner-border').removeClass('d-none');
+                $errorMsg.removeClass('show').addClass('d-none');
+                
+                setTimeout(function() {
+                    // 账号密码匹配逻辑
+                    if(username === 'mayongqi' && password === '123456') {
+                        // 记录登录状态
+                        sessionStorage.setItem('isLoggedIn', 'true');
+                        
+                        // 登录成功，显示成功状态并跳转
+                        $btn.removeClass('btn-login').addClass('btn-success');
+                        $btn.find('.btn-text').text('登录成功，正在跳转...');
+                        $btn.find('.spinner-border').addClass('d-none');
+                        
+                        // 延迟后跳转至 index.html
+                        setTimeout(function() {
+                            window.location.href = 'index.html';
+                        }, 500);
+                    } else {
+                        // 登录失败
+                        showError('账号或密码错误，请检查后重试！');
+                        $btn.prop('disabled', false);
+                        $btn.find('.btn-text').text('登录系统');
+                        $btn.find('.spinner-border').addClass('d-none');
+                    }
+                }, 800); // 模拟网络请求延迟800ms
+            });
+            
+            function showError(msg) {
+                $('#errorText').text(msg);
+                $('#errorMessage').removeClass('d-none');
+                // 使用延时让CSS过渡动画生效
+                setTimeout(() => {
+                    $('#errorMessage').addClass('show');
+                }, 10);
+            }
+            
+            // 输入框获取焦点时隐藏错误提示
+            $('.form-control').on('focus', function() {
+                $('#errorMessage').removeClass('show');
+                setTimeout(() => {
+                    $('#errorMessage').addClass('d-none');
+                }, 300);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script>
+        // 检查登录状态
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统设置 - 永奇招聘平台</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-teal: #f0fdfa;
+            --primary-teal: #0d9488;
+            --text-dark: #111827;
+            --card-bg: #ffffff;
+            --border-color: #ccfbf1;
+        }
+        body { background-color: var(--bg-teal); color: var(--text-dark); font-family: 'Segoe UI', sans-serif; }
+        
+        .navbar-custom { background-color: #fff; box-shadow: 0 2px 10px rgba(13, 148, 136, 0.1); padding: 1rem 2rem; border-bottom: 2px solid var(--primary-teal); }
+        .navbar-brand { font-weight: 700; color: var(--text-dark) !important; }
+        .navbar-brand i { color: var(--primary-teal); margin-right: 10px; }
+        .nav-link { color: #4b5563 !important; font-weight: 500; margin: 0 10px; padding: 8px 16px !important; border-radius: 6px; }
+        .nav-link:hover, .nav-link.active { color: #fff !important; background-color: var(--primary-teal); }
+
+        .container-fluid-custom { padding: 100px 40px 40px; }
+        
+        .settings-card { background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 30px; border: 1px solid var(--border-color); margin-bottom: 30px; }
+        .card-header-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 25px; display: flex; align-items: center; padding-bottom: 15px; border-bottom: 1px solid #e5e7eb; }
+        .card-header-title i { color: var(--primary-teal); margin-right: 12px; font-size: 1.5rem; }
+
+        /* Sub Feature 1: Roles and Permissions */
+        .table-roles th { background-color: #f9fafb; color: #374151; font-weight: 600; }
+        .table-roles td { vertical-align: middle; }
+        .form-switch .form-check-input { width: 2.5em; height: 1.25em; cursor: pointer; }
+        .form-switch .form-check-input:checked { background-color: var(--primary-teal); border-color: var(--primary-teal); }
+
+        /* Sub Feature 2: Process configuration */
+        .process-list { list-style: none; padding: 0; margin: 0; }
+        .process-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px 20px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; cursor: grab; transition: background 0.2s; }
+        .process-item:hover { background: #f1f5f9; border-color: var(--primary-teal); }
+        .drag-handle { color: #94a3b8; margin-right: 15px; cursor: grab; font-size: 1.2rem; }
+        .process-name { font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html"><i class="fa-solid fa-code-branch"></i>永奇招聘平台</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">控制台</a></li>
+                    <li class="nav-item"><a class="nav-link" href="jobs.html">职位管理</a></li>
+                    <li class="nav-item"><a class="nav-link" href="resumes.html">简历中心</a></li>
+                    <li class="nav-item"><a class="nav-link" href="interviews.html">面试排期</a></li>
+                    <li class="nav-item"><a class="nav-link" href="tests.html">在线笔试</a></li>
+                    <li class="nav-item"><a class="nav-link" href="analysis.html">数据分析</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="settings.html">系统设置</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid-custom row justify-content-center">
+        <div class="col-lg-10">
+            <h2 class="fw-bold mb-4 text-dark"><i class="fa-solid fa-gears" style="color: var(--primary-teal);"></i> 系统配置与权限管理</h2>
+            
+            <!-- Sub Feature 3: Base Settings -->
+            <div class="settings-card" id="base-section">
+                <div class="card-header-title">
+                    <i class="fa-solid fa-building"></i> 企业基础信息与全局配置
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <form>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">企业名称</label>
+                                <input type="text" class="form-control" value="永奇软件科技有限公司">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">企业Logo上传</label>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div style="width: 80px; height: 80px; border: 2px dashed #cbd5e1; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f8fafc;">
+                                        <i class="fa-solid fa-image text-muted fs-3"></i>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">选择文件...</button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">系统时区</label>
+                                <select class="form-select">
+                                    <option selected>Asia/Shanghai (GMT+8)</option>
+                                    <option>America/New_York (GMT-5)</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">全局消息通知设置</label>
+                            <div class="list-group">
+                                <label class="list-group-item d-flex gap-3">
+                                    <input class="form-check-input flex-shrink-0" type="checkbox" value="" checked>
+                                    <span class="pt-1 form-checked-content">
+                                        <strong>新简历投递提醒</strong>
+                                        <small class="d-block text-muted">当有候选人投递新简历时，系统内通知HR。</small>
+                                    </span>
+                                </label>
+                                <label class="list-group-item d-flex gap-3">
+                                    <input class="form-check-input flex-shrink-0" type="checkbox" value="" checked>
+                                    <span class="pt-1 form-checked-content">
+                                        <strong>面试官评价催办</strong>
+                                        <small class="d-block text-muted">面试结束后24小时未填写评价，自动发送催办通知。</small>
+                                    </span>
+                                </label>
+                                <label class="list-group-item d-flex gap-3">
+                                    <input class="form-check-input flex-shrink-0" type="checkbox" value="">
+                                    <span class="pt-1 form-checked-content">
+                                        <strong>每日招聘简报推送</strong>
+                                        <small class="d-block text-muted">每日早上9点向管理员发送前一日的招聘数据汇总。</small>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub Feature 1: Role Management -->
+            <div class="settings-card" id="roles-section">
+                <div class="card-header-title">
+                    <i class="fa-solid fa-user-shield"></i> 角色权限控制与账号分配
+                    <button class="btn btn-sm btn-primary ms-auto fw-bold" style="background-color: var(--primary-teal); border:none;"><i class="fa-solid fa-plus"></i> 新增角色</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-roles">
+                        <thead>
+                            <tr>
+                                <th>角色名称</th>
+                                <th>角色描述</th>
+                                <th>关联账号数</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold">超级管理员</td>
+                                <td class="text-muted">拥有系统所有模块的最高配置与查看权限</td>
+                                <td><span class="badge bg-secondary rounded-pill">2 人</span></td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked disabled>
+                                    </div>
+                                </td>
+                                <td><button class="btn btn-sm btn-outline-secondary" disabled>默认配置</button></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-primary">HR 经理</td>
+                                <td class="text-muted">可管理职位、处理所有简历及查看数据报表</td>
+                                <td><span class="badge bg-info text-dark rounded-pill">5 人</span></td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                    </div>
+                                </td>
+                                <td><button class="btn btn-sm btn-outline-primary">编辑权限</button></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-success">技术面试官</td>
+                                <td class="text-muted">仅可查看分配给自己的简历，填写面试评价及阅卷</td>
+                                <td><span class="badge bg-success rounded-pill">34 人</span></td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                    </div>
+                                </td>
+                                <td><button class="btn btn-sm btn-outline-primary">编辑权限</button></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-warning">部门主管</td>
+                                <td class="text-muted">可提出招聘需求，查看本部门的录用进度</td>
+                                <td><span class="badge bg-warning text-dark rounded-pill">8 人</span></td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox">
+                                    </div>
+                                </td>
+                                <td><button class="btn btn-sm btn-outline-primary">编辑权限</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Sub Feature 2: Process Configuration -->
+            <div class="settings-card" id="process-section">
+                <div class="card-header-title">
+                    <i class="fa-solid fa-diagram-project"></i> 招聘流程与数据字典自定义
+                </div>
+                <div class="row">
+                    <div class="col-md-6 border-end">
+                        <h5 class="fw-bold mb-3">标准化招聘流转节点配置</h5>
+                        <p class="text-muted small">拖拽节点可调整流转顺序。此配置将全局生效于“简历看板”。</p>
+                        <ul class="process-list">
+                            <li class="process-item">
+                                <div><i class="fa-solid fa-grip-vertical drag-handle"></i> <span class="process-name">新投递简历</span></div>
+                                <span class="badge bg-light text-dark border">系统默认</span>
+                            </li>
+                            <li class="process-item">
+                                <div><i class="fa-solid fa-grip-vertical drag-handle"></i> <span class="process-name">初筛通过</span></div>
+                                <div>
+                                    <button class="btn btn-sm btn-link text-secondary"><i class="fa-solid fa-pen"></i></button>
+                                </div>
+                            </li>
+                            <li class="process-item">
+                                <div><i class="fa-solid fa-grip-vertical drag-handle"></i> <span class="process-name">在线笔试</span></div>
+                                <div>
+                                    <button class="btn btn-sm btn-link text-secondary"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="btn btn-sm btn-link text-danger"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </li>
+                            <li class="process-item">
+                                <div><i class="fa-solid fa-grip-vertical drag-handle"></i> <span class="process-name">技术一面</span></div>
+                                <div>
+                                    <button class="btn btn-sm btn-link text-secondary"><i class="fa-solid fa-pen"></i></button>
+                                </div>
+                            </li>
+                            <li class="process-item border-dashed bg-transparent text-center justify-content-center cursor-pointer text-muted" style="border-style: dashed; cursor: pointer;">
+                                <i class="fa-solid fa-plus me-2"></i> 添加自定义节点
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 ps-4">
+                        <h5 class="fw-bold mb-3">数据字典配置 (淘汰原因)</h5>
+                        <p class="text-muted small">配置HR在归档简历时可选的淘汰原因列表。</p>
+                        <div class="input-group mb-2">
+                            <input type="text" class="form-control" value="薪资期望过高">
+                            <button class="btn btn-outline-danger"><i class="fa-solid fa-minus"></i></button>
+                        </div>
+                        <div class="input-group mb-2">
+                            <input type="text" class="form-control" value="技术栈不匹配">
+                            <button class="btn btn-outline-danger"><i class="fa-solid fa-minus"></i></button>
+                        </div>
+                        <div class="input-group mb-2">
+                            <input type="text" class="form-control" value="沟通表达欠佳">
+                            <button class="btn btn-outline-danger"><i class="fa-solid fa-minus"></i></button>
+                        </div>
+                        <div class="input-group mb-2">
+                            <input type="text" class="form-control" placeholder="输入新的淘汰原因...">
+                            <button class="btn btn-success" style="background-color: var(--primary-teal); border:none;"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                        <div class="text-end mt-4">
+                            <button class="btn btn-primary fw-bold px-5" style="background-color: var(--primary-teal); border:none;">保存全局配置</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Sub Feature 4: Integrations -->
+            <div class="settings-card" id="integration-section">
+                <div class="card-header-title">
+                    <i class="fa-solid fa-plug"></i> 第三方服务与接口集成
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm bg-light">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa-solid fa-envelope-open-text fs-2 text-primary me-3"></i>
+                                        <div>
+                                            <h6 class="fw-bold mb-0">邮件与短信服务 (SMTP/SMS)</h6>
+                                            <small class="text-muted">用于发送面试邀约、Offer等</small>
+                                        </div>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                    </div>
+                                </div>
+                                <div class="bg-white p-3 rounded border">
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">SMTP 服务器地址</label>
+                                        <input type="text" class="form-control form-control-sm" value="smtp.aliyun.com">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">短信网关 API Key</label>
+                                        <input type="password" class="form-control form-control-sm" value="********">
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary mt-2">测试连接</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm bg-light">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa-solid fa-video fs-2 text-info me-3"></i>
+                                        <div>
+                                            <h6 class="fw-bold mb-0">视频面试集成 (腾讯会议/Zoom)</h6>
+                                            <small class="text-muted">自动生成视频会议链接</small>
+                                        </div>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                    </div>
+                                </div>
+                                <div class="bg-white p-3 rounded border">
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">服务商选择</label>
+                                        <select class="form-select form-select-sm">
+                                            <option selected>腾讯会议企业版</option>
+                                            <option>Zoom</option>
+                                            <option>钉钉会议</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">App ID / Secret</label>
+                                        <input type="password" class="form-control form-control-sm" value="********">
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-info mt-2">授权绑定</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm bg-light">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa-solid fa-file-invoice fs-2 text-warning me-3"></i>
+                                        <div>
+                                            <h6 class="fw-bold mb-0">简历解析引擎 (OCR/NLP)</h6>
+                                            <small class="text-muted">自动提取PDF/Word简历内容</small>
+                                        </div>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                    </div>
+                                </div>
+                                <div class="bg-white p-3 rounded border">
+                                    <p class="small text-muted mb-2">当前使用：百度AI简历解析服务</p>
+                                    <div class="progress mb-2" style="height: 10px;">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 45%;" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <small class="text-muted">本月解析额度使用量: 450 / 1000 次</small>
+                                    <div class="mt-2"><button class="btn btn-sm btn-link text-warning p-0 text-decoration-none">升级额度套餐</button></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm bg-light">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa-solid fa-id-card-clip fs-2 text-danger me-3"></i>
+                                        <div>
+                                            <h6 class="fw-bold mb-0">员工背调服务 (第三方)</h6>
+                                            <small class="text-muted">发放Offer前的背景调查</small>
+                                        </div>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox">
+                                    </div>
+                                </div>
+                                <div class="bg-white p-3 rounded border text-center py-4">
+                                    <i class="fa-solid fa-lock text-muted fs-3 mb-2"></i>
+                                    <h6 class="fw-bold">尚未开通背调服务</h6>
+                                    <p class="small text-muted mb-3">联系销售获取开通权限及报价</p>
+                                    <button class="btn btn-sm btn-danger">立即开通</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub Feature 5: Audit Logs -->
+            <div class="settings-card" id="audit-section">
+                <div class="card-header-title">
+                    <i class="fa-solid fa-clock-rotate-left"></i> 系统安全与操作审计日志
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <div class="d-flex gap-2">
+                        <input type="date" class="form-control form-control-sm w-auto">
+                        <select class="form-select form-select-sm w-auto">
+                            <option>全部操作类型</option>
+                            <option>登录登出</option>
+                            <option>权限修改</option>
+                            <option>数据导出</option>
+                            <option>系统配置更改</option>
+                        </select>
+                        <button class="btn btn-sm btn-outline-secondary">查询</button>
+                    </div>
+                    <button class="btn btn-sm btn-outline-success"><i class="fa-solid fa-file-csv"></i> 导出日志</button>
+                </div>
+                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-sm table-hover text-nowrap">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>时间</th>
+                                <th>操作人</th>
+                                <th>IP地址</th>
+                                <th>操作类型</th>
+                                <th>详细内容</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small">
+                            <tr>
+                                <td>2026-04-03 14:32:11</td>
+                                <td>admin (超级管理员)</td>
+                                <td>192.168.1.105</td>
+                                <td><span class="badge bg-primary">权限修改</span></td>
+                                <td>修改了 [HR 经理] 角色的数据查看权限</td>
+                                <td class="text-success">成功</td>
+                            </tr>
+                            <tr>
+                                <td>2026-04-03 10:15:42</td>
+                                <td>wanghai (技术总监)</td>
+                                <td>10.0.5.22</td>
+                                <td><span class="badge bg-success">登录登出</span></td>
+                                <td>系统登录</td>
+                                <td class="text-success">成功</td>
+                            </tr>
+                            <tr>
+                                <td>2026-04-02 18:45:00</td>
+                                <td>chenxing (前端负责人)</td>
+                                <td>10.0.5.18</td>
+                                <td><span class="badge bg-warning text-dark">数据导出</span></td>
+                                <td>导出了前端开发岗位的面试成绩单报表</td>
+                                <td class="text-success">成功</td>
+                            </tr>
+                            <tr>
+                                <td>2026-04-02 09:12:05</td>
+                                <td>unknown</td>
+                                <td>203.119.x.x</td>
+                                <td><span class="badge bg-danger">登录登出</span></td>
+                                <td>尝试使用 admin 账号登录失败 (密码错误)</td>
+                                <td class="text-danger fw-bold">失败</td>
+                            </tr>
+                            <tr>
+                                <td>2026-04-01 16:20:33</td>
+                                <td>admin (超级管理员)</td>
+                                <td>192.168.1.105</td>
+                                <td><span class="badge bg-info text-dark">系统配置更改</span></td>
+                                <td>更新了SMTP邮件服务器配置</td>
+                                <td class="text-success">成功</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-3 text-end">
+                    <p class="text-muted small mb-0"><i class="fa-solid fa-circle-info"></i> 日志最多保留 180 天，超期自动归档至冷存储。</p>
+                </div>
+            </div>
+
+            <!-- Sub Feature 6: Data Backup & Recovery -->
+            <div class="settings-card" id="backup-section">
+                <div class="card-header-title">
+                    <i class="fa-solid fa-hard-drive"></i> 数据备份与灾难恢复
+                </div>
+                <div class="row">
+                    <div class="col-md-7 border-end pe-4">
+                        <h6 class="fw-bold mb-3">自动备份策略</h6>
+                        <form>
+                            <div class="mb-3 d-flex align-items-center justify-content-between">
+                                <div>
+                                    <label class="form-label fw-bold mb-0">全量数据库备份</label>
+                                    <div class="small text-muted">包含所有职位、简历、面试记录等核心数据</div>
+                                </div>
+                                <select class="form-select form-select-sm w-auto">
+                                    <option>每天凌晨 02:00</option>
+                                    <option selected>每周日凌晨 03:00</option>
+                                    <option>每月1号凌晨 04:00</option>
+                                </select>
+                            </div>
+                            <div class="mb-3 d-flex align-items-center justify-content-between">
+                                <div>
+                                    <label class="form-label fw-bold mb-0">附件与静态文件增量备份</label>
+                                    <div class="small text-muted">简历原件、企业Logo、导出报表等</div>
+                                </div>
+                                <select class="form-select form-select-sm w-auto">
+                                    <option selected>每天增量备份</option>
+                                    <option>实时同步(需要高防OSS)</option>
+                                    <option>关闭备份</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-primary px-4 mt-2" style="background-color: var(--primary-teal); border:none;">保存策略</button>
+                        </form>
+                    </div>
+                    <div class="col-md-5 ps-4">
+                        <h6 class="fw-bold mb-3">手动操作与恢复</h6>
+                        <div class="d-grid gap-3">
+                            <button class="btn btn-outline-secondary d-flex justify-content-between align-items-center">
+                                <span><i class="fa-solid fa-download text-primary me-2"></i> 立即创建全量备份</span>
+                                <i class="fa-solid fa-chevron-right text-muted"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary d-flex justify-content-between align-items-center">
+                                <span><i class="fa-solid fa-rotate-left text-danger me-2"></i> 从历史快照恢复数据</span>
+                                <i class="fa-solid fa-chevron-right text-muted"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary d-flex justify-content-between align-items-center">
+                                <span><i class="fa-solid fa-broom text-warning me-2"></i> 清理过期无用附件空间</span>
+                                <i class="fa-solid fa-chevron-right text-muted"></i>
+                            </button>
+                        </div>
+                        <div class="alert alert-warning mt-4 p-2 small">
+                            <i class="fa-solid fa-triangle-exclamation"></i> 恢复数据将覆盖当前所有记录，操作前请务必确认！
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
